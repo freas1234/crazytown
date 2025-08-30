@@ -1,0 +1,441 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .flip-x {
+    transform: scaleX(-1);
+  }
+}
+
+@layer base {
+  :root {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 246 80% 60%;
+    --primary-foreground: 60 9.1% 97.8%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --radius: 0.5rem;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    background-image: 
+      radial-gradient(circle at 25% 25%, rgba(79, 70, 229, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(129, 140, 248, 0.05) 0%, transparent 50%),
+      linear-gradient(to right, rgba(30, 41, 59, 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 20px 20px, 20px 20px;
+  }
+
+  /* RTL-specific adjustments */
+  .rtl {
+    direction: rtl;
+    text-align: right;
+  }
+  
+  .ltr {
+    direction: ltr;
+    text-align: left;
+  }
+}
+
+@layer components {
+  .glow-border {
+    @apply border border-primary relative;
+    box-shadow: 0 0 10px rgba(79, 70, 229, 0.5), inset 0 0 5px rgba(129, 140, 248, 0.3);
+  }
+
+  .glow-border::after {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-500;
+    box-shadow: 0 0 20px rgba(79, 70, 229, 0.8), inset 0 0 10px rgba(129, 140, 248, 0.5);
+  }
+
+  .glow-border:hover::after {
+    @apply opacity-100;
+  }
+
+  .game-card {
+    @apply bg-gray-800/80 backdrop-blur-sm rounded-lg p-6 border border-gray-700 transition-all duration-300 relative overflow-hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    clip-path: polygon(
+      0 10px, 
+      10px 0, 
+      calc(100% - 10px) 0, 
+      100% 10px, 
+      100% calc(100% - 10px), 
+      calc(100% - 10px) 100%, 
+      10px 100%, 
+      0 calc(100% - 10px)
+    );
+  }
+
+  .game-card::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-500 pointer-events-none;
+    background: linear-gradient(45deg, rgba(79, 70, 229, 0.1), transparent 40%);
+    box-shadow: 0 0 15px rgba(129, 140, 248, 0.5), inset 0 0 10px rgba(79, 70, 229, 0.2);
+  }
+
+  .game-card:hover::before {
+    @apply opacity-100;
+  }
+
+  .game-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 10px rgba(79, 70, 229, 0.4);
+  }
+
+  .game-card::after {
+    content: '';
+    @apply absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-70;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white px-4 py-2 rounded-md relative overflow-hidden transition-all duration-300;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    clip-path: polygon(
+      0 5px, 
+      5px 0, 
+      calc(100% - 5px) 0, 
+      100% 5px, 
+      100% calc(100% - 5px), 
+      calc(100% - 5px) 100%, 
+      5px 100%, 
+      0 calc(100% - 5px)
+    );
+  }
+
+  .btn-primary::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300 pointer-events-none;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent 70%);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px -3px rgba(0, 0, 0, 0.3), 0 0 8px rgba(79, 70, 229, 0.6);
+  }
+
+  .btn-primary:hover::before {
+    @apply opacity-100;
+  }
+
+  .btn-primary:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  }
+
+  .neon-text {
+    @apply text-primary font-bold;
+    text-shadow: 0 0 5px rgba(79, 70, 229, 0.7), 0 0 10px rgba(129, 140, 248, 0.5);
+  }
+
+  .parallax-bg {
+    @apply relative overflow-hidden;
+  }
+
+  .parallax-bg::before {
+    content: '';
+    @apply absolute inset-0 z-0;
+    background-image: url('/grid-pattern.svg');
+    background-size: 50px 50px;
+    opacity: 0.05;
+    transform: translateZ(-10px);
+  }
+
+  .cyberpunk-border {
+    @apply relative;
+  }
+
+  .cyberpunk-border::before {
+    content: '';
+    @apply absolute -bottom-1 left-0 h-1 bg-primary;
+    width: 60%;
+  }
+
+  .cyberpunk-border::after {
+    content: '';
+    @apply absolute -bottom-1 right-0 h-1 bg-primary;
+    width: 20%;
+  }
+
+  .game-input {
+    @apply bg-gray-800 border border-gray-700 rounded-md py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  .game-header {
+    @apply text-2xl font-display font-bold text-white relative inline-block;
+  }
+
+  .game-header::after {
+    content: '';
+    @apply absolute -bottom-1 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent;
+  }
+
+  .game-select {
+    @apply appearance-none bg-gray-800 border border-gray-700 rounded-md py-2 px-4 pr-8 text-white focus:outline-none focus:ring-2 focus:ring-primary;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23818CF8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1.5em 1.5em;
+  }
+
+  /* Additional styles for new components */
+  .bg-cyber-grid {
+    background-image: 
+      linear-gradient(to right, rgba(79, 70, 229, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(79, 70, 229, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  .blur-3xl {
+    filter: blur(50px);
+  }
+  
+  .parallax-element {
+    transition: transform 0.2s ease-out;
+  }
+  
+  /* Notification animations */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out forwards;
+  }
+  
+  .animate-fade-out {
+    animation: fadeOut 0.3s ease-in-out forwards;
+  }
+
+  /* RTL-aware component styles */
+  .input-rtl {
+    @apply text-right;
+  }
+  
+  .dropdown-rtl {
+    @apply origin-top-right;
+  }
+  
+  .dropdown-ltr {
+    @apply origin-top-left;
+  }
+  
+  /* Add RTL-specific component styles here */
+  .rtl .icon-flip {
+    @apply flip-x;
+  }
+  
+  /* Logical property helpers */
+  .border-inline-start {
+    @apply ltr:border-l rtl:border-r;
+  }
+  
+  .border-inline-end {
+    @apply ltr:border-r rtl:border-l;
+  }
+  
+  .rounded-inline-start {
+    @apply ltr:rounded-l rtl:rounded-r;
+  }
+  
+  .rounded-inline-end {
+    @apply ltr:rounded-r rtl:rounded-l;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  text-align: right;
+  font-family: 'Tajawal', sans-serif;
+}
+
+[dir="rtl"] .cyberpunk-border::before {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .cyberpunk-border::after {
+  right: auto;
+  left: 0;
+}
+
+[dir="rtl"] .game-select {
+  background-position: left 0.5rem center;
+  padding-right: 1rem;
+  padding-left: 2rem;
+}
+
+[dir="ltr"] {
+  text-align: left;
+}
+
+/* Animated background elements */
+.animated-bg {
+  @apply fixed inset-0 z-[-1] opacity-30 pointer-events-none;
+}
+
+.animated-bg .line {
+  @apply absolute bg-primary opacity-10;
+  height: 1px;
+  width: 100%;
+  animation: pulse 10s infinite;
+}
+
+.animated-bg .line:nth-child(1) { top: 10%; animation-delay: 0s; }
+.animated-bg .line:nth-child(2) { top: 30%; animation-delay: 2s; }
+.animated-bg .line:nth-child(3) { top: 50%; animation-delay: 4s; }
+.animated-bg .line:nth-child(4) { top: 70%; animation-delay: 6s; }
+.animated-bg .line:nth-child(5) { top: 90%; animation-delay: 8s; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.05; }
+  50% { opacity: 0.2; }
+}
+
+/* Floating particles animation */
+.particles-container .particle {
+  animation: float 15s infinite linear;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(100px);
+    opacity: 0;
+  }
+}
+
+/* Pulse animation */
+.animate-pulse-slow {
+  animation: pulse-slow 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Animation delay utilities */
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Text flicker animation */
+.animate-text-flicker {
+  animation: text-flicker 5s linear infinite;
+}
+
+@keyframes text-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow: 0 0 5px rgba(79, 70, 229, 0.7), 0 0 10px rgba(129, 140, 248, 0.5);
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+  }
+}
+
+/* Contact form enhancements */
+.contact-icon-box {
+  @apply w-12 h-12 rounded-md bg-primary/10 flex items-center justify-center text-primary;
+  box-shadow: 0 0 15px rgba(79, 70, 229, 0.3), inset 0 0 5px rgba(79, 70, 229, 0.2);
+}
+
+.contact-form-input {
+  @apply bg-gray-800/50 border border-gray-700 rounded-md py-3 px-4 text-white w-full;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.contact-form-input:focus {
+  @apply border-primary/50 outline-none;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.social-icon {
+  @apply w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300;
+  background: rgba(79, 70, 229, 0.1);
+  box-shadow: 0 0 10px rgba(79, 70, 229, 0.2);
+}
+
+.social-icon:hover {
+  @apply text-white;
+  background: rgba(79, 70, 229, 0.8);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+}
+
+/* Arabic text improvements */
+[dir="rtl"] {
+  font-feature-settings: "rlig" 1, "calt" 1, "kern" 1;
+  letter-spacing: 0;
+}
+
+[dir="rtl"] h1, 
+[dir="rtl"] h2, 
+[dir="rtl"] h3, 
+[dir="rtl"] h4, 
+[dir="rtl"] h5, 
+[dir="rtl"] h6 {
+  font-family: 'Tajawal', sans-serif;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+[dir="rtl"] p, 
+[dir="rtl"] span, 
+[dir="rtl"] a, 
+[dir="rtl"] li, 
+[dir="rtl"] input, 
+[dir="rtl"] textarea, 
+[dir="rtl"] button {
+  font-family: 'Tajawal', sans-serif;
+  line-height: 1.6;
+}
+
+/* Fix for Arabic form inputs */
+[dir="rtl"] .contact-form-input {
+  text-align: right;
+}
+
+/* Fix for Arabic accordion content */
+[dir="rtl"] .accordion-content {
+  text-align: right;
+}
+
+/* Font imports */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&display=swap'); 

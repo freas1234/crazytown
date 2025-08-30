@@ -1,0 +1,5 @@
+module.exports = {
+  clientId: "AbvRmBN5wvyJV6ojQ-m9fjdgP0akhmUJZ2FGzP1z9uDH6tHiZ4ZeoN9yNvgG3fKIQyvTaC7f0Vg5ELVx",
+  clientSecret: "EDKgnRRUUaZPxY3RBH3vh5WnIs_erZTGO73NdO3-aj-QILrwPp6WM3Z61cCGQpxqTk4IjXuTaoc_tISR",
+  environment: 'production'
+}

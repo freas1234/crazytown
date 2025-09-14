@@ -60,9 +60,9 @@ export const PAYPAL_CONFIG = {
 };
 
 export const APP_CONFIG = {
-  name: 'Crazytown Store',
+  name: 'Wexon Store',
   description: 'The ultimate gaming experience',
-  supportEmail: 'support@crazytown-store.com',
+  supportEmail: 'support@wexon-store.com',
   maintenanceMode: process.env.MAINTENANCE_MODE === 'true',
 };
 

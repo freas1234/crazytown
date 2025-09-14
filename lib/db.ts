@@ -214,12 +214,12 @@ async function initializeDb() {
         type: 'hero',
         data: {
           en: {
-            title: "Welcome to Crazy Town FiveM Server",
+            title: "Welcome to Wexon FiveM Server",
             subtitle: "The ultimate gaming experience",
             cta: "Explore Store",
           },
           ar: {
-            title: "مرحبًا بك في سيرفر كريزي تاون",
+            title: "مرحبًا بك في سيرفر ويكسون",
             subtitle: "تجربة لعب لا مثيل لها",
             cta: "استكشف المتجر",
           }
@@ -299,7 +299,7 @@ async function initializeDb() {
         id: uuidv4(),
         type: 'metadata',
         data: {
-          title: 'Crazytown Store',
+          title: 'Wexon Store',
           description: 'Your cyberpunk gaming destination',
         },
         createdAt: new Date(),

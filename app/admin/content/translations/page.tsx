@@ -15,6 +15,7 @@ import RuleTranslationHelper from '../../../../components/admin/RuleTranslationH
 import { Separator } from '../../../../components/ui/separator';
 import { Badge } from '../../../../components/ui/badge';
 import Link from 'next/link';
+import { adminGet, adminPost, adminPut } from '../../../../lib/admin-api';
 
 type NestedObject = {
   [key: string]: string | NestedObject;
@@ -85,12 +86,9 @@ export default function TranslationsPage() {
     const fetchMaintenanceContent = async () => {
       try {
         setMaintenanceLoading(true);
-        const response = await fetch('/api/admin/maintenance');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.content) {
-            setMaintenanceContent(data.content);
-          }
+        const result = await adminGet('/api/admin/maintenance');
+        if (result.success && result.data.content) {
+          setMaintenanceContent(result.data.content);
         }
       } catch (error) {
         console.error('Error fetching maintenance content:', error);
@@ -109,39 +107,26 @@ export default function TranslationsPage() {
     try {
       setSaving(true);
       
-      
-      const [enRes, arRes] = await Promise.all([
-        fetch('/api/admin/content/translations', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            language: 'en',
-            translations: translations.en
-          }),
+      const [enResult, arResult] = await Promise.all([
+        adminPut('/api/admin/content/translations', {
+          language: 'en',
+          translations: translations.en
         }),
-        fetch('/api/admin/content/translations', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            language: 'ar',
-            translations: translations.ar
-          }),
+        adminPut('/api/admin/content/translations', {
+          language: 'ar',
+          translations: translations.ar
         })
       ]);
       
-      if (!enRes.ok || !arRes.ok) {
-        throw new Error('Failed to save translations');
+      if (!enResult.success || !arResult.success) {
+        throw new Error(enResult.error || arResult.error || 'Failed to save translations');
       }
       
       toast.success('Translations saved successfully');
-      setSaving(false);
     } catch (error) {
       console.error('Error saving translations:', error);
-      toast.error('Failed to save translations');
+      toast.error(`Error saving translations: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
       setSaving(false);
     }
   };
@@ -150,24 +135,18 @@ export default function TranslationsPage() {
     try {
       setMaintenanceSaving(true);
       
-      const response = await fetch('/api/admin/maintenance', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: maintenanceContent
-        }),
+      const result = await adminPost('/api/admin/maintenance', {
+        content: maintenanceContent
       });
       
-      if (!response.ok) {
-        throw new Error('Failed to save maintenance content');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save maintenance content');
       }
       
       toast.success('Maintenance content saved successfully');
     } catch (error) {
       console.error('Error saving maintenance content:', error);
-      toast.error('Failed to save maintenance content');
+      toast.error(`Error saving maintenance content: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setMaintenanceSaving(false);
     }

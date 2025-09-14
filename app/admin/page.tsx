@@ -58,25 +58,16 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchRecentApplications();
-    fetchJobs();
     
     // Simulate progress animation
     const timer = setTimeout(() => setProgressValue(100), 500);
     return () => clearTimeout(timer);
   }, []);
 
-  const fetchJobs = async () => {
-    try {
-      const response = await fetch('/api/jobs');
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-      const data = await response.json();
-      setJobs(data.jobs || []);
-    } catch (error) {
-      console.error('Error fetching jobs:', error);
-    }
-  };
+  // Jobs functionality disabled - no jobs API endpoint available
+  // const fetchJobs = async () => {
+  //   // Jobs API not implemented yet
+  // };
 
   const fetchRecentApplications = async () => {
     try {
@@ -91,29 +82,11 @@ export default function AdminDashboard() {
       
       const data = await response.json();
       
-      const applicationsWithJobDetails = await Promise.all(
-        data.applications.slice(0, 5).map(async (app: Application) => {
-          try {
-            const jobResponse = await fetch(`/api/jobs/${app.jobId}`);
-            if (jobResponse.ok) {
-              const jobData = await jobResponse.json();
-              return {
-                ...app,
-                jobTitle: jobData.job?.title || 'Unknown Job'
-              };
-            }
-            return {
-              ...app,
-              jobTitle: 'Unknown Job'
-            };
-          } catch (error) {
-            return {
-              ...app,
-              jobTitle: 'Unknown Job'
-            };
-          }
-        })
-      );
+      // Add job titles to applications (fallback to jobId if job API not available)
+      const applicationsWithJobDetails = data.applications.slice(0, 5).map((app: Application) => ({
+        ...app,
+        jobTitle: app.jobTitle || `Job ${app.jobId?.substring(0, 8) || 'Unknown'}`
+      }));
       
       setRecentApplications(applicationsWithJobDetails);
     } catch (error) {
@@ -261,10 +234,10 @@ export default function AdminDashboard() {
           <TabsContent value="overview">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <StatCard 
-                title="Total Jobs" 
-                value={jobs.length}
+                title="Total Applications" 
+                value={recentApplications.length}
                 icon={<Activity className="h-4 w-4" />}
-                trend={{ value: "+12% from last month", positive: true }}
+                description="All time applications"
                 color="blue"
               />
               <StatCard 
@@ -299,7 +272,7 @@ export default function AdminDashboard() {
                     <CardDescription className="text-gray-400">Latest job applications received</CardDescription>
                   </div>
                   <Button variant="ghost" size="sm" asChild className="hover:bg-primary/20 hover:text-primary transition-all duration-300">
-                    <Link href="/admin/jobs" className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <Link href="/admin/store" className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
                       View All
                       <ArrowRight className={`h-4 w-4 ${isRTL ? 'mr-2 flip-x' : 'ml-2'}`} />
                     </Link>
@@ -337,12 +310,9 @@ export default function AdminDashboard() {
                       {recentApplications.map(application => (
                         <div key={application.id} className="flex items-center justify-between border-b border-gray-800/50 pb-4 last:border-0 last:pb-0 hover:bg-gray-800/10 p-2 rounded-md transition-colors">
                           <div>
-                            <Link 
-                              href={`/admin/jobs/${application.jobId}/applications`}
-                              className="font-medium text-white hover:text-primary transition-colors"
-                            >
+                            <span className="font-medium text-white">
                               {application.name}
-                            </Link>
+                            </span>
                             <p className="text-sm text-gray-500">Applied for {application.jobTitle}</p>
                           </div>
                           <div className="flex items-center gap-4">
@@ -356,9 +326,9 @@ export default function AdminDashboard() {
                 </CardContent>
                 <CardFooter className="bg-secondary/30 border-t border-gray-800/50">
                   <Button asChild className="w-full bg-primary hover:bg-primary/80 text-white gap-2">
-                    <Link href="/admin/jobs">
+                    <Link href="/admin/store">
                       <Users className="h-4 w-4" />
-                      Manage All Jobs & Applications
+                      Manage Store & Products
                     </Link>
                   </Button>
                 </CardFooter>
@@ -374,9 +344,9 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-3 pt-6">
                   <Button variant="outline" className={`w-full justify-start border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 gap-2 ${isRTL ? 'flex-row-reverse' : ''}`} asChild>
-                    <Link href="/admin/jobs/create">
+                    <Link href="/admin/store/products/create">
                       <Plus className="h-4 w-4" />
-                      Create New Job
+                      Create New Product
                     </Link>
                   </Button>
                   
@@ -474,12 +444,9 @@ export default function AdminDashboard() {
                     {recentApplications.map(application => (
                       <div key={application.id} className="flex items-center justify-between border-b border-gray-800/50 pb-4 last:border-0 last:pb-0 hover:bg-gray-800/10 p-2 rounded-md transition-colors">
                         <div>
-                          <Link 
-                            href={`/admin/jobs/${application.jobId}/applications`}
-                            className="font-medium text-white hover:text-primary transition-colors"
-                          >
+                          <span className="font-medium text-white">
                             {application.name}
-                          </Link>
+                          </span>
                           <div className="flex items-center gap-2">
                             <p className="text-sm text-gray-500">Applied for {application.jobTitle}</p>
                             <p className="text-xs text-gray-600">• {application.email}</p>
@@ -488,10 +455,8 @@ export default function AdminDashboard() {
                         <div className="flex items-center gap-4">
                           {getStatusBadge(application.status)}
                           <span className="text-xs text-gray-500">{formatDate(application.createdAt)}</span>
-                          <Button variant="ghost" size="sm" asChild className="hover:bg-primary/20 hover:text-primary">
-                            <Link href={`/admin/jobs/${application.jobId}/applications`}>
-                              <Eye className="h-4 w-4" />
-                            </Link>
+                          <Button variant="ghost" size="sm" className="hover:bg-primary/20 hover:text-primary" disabled>
+                            <Eye className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
@@ -500,12 +465,12 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
               <CardFooter className="bg-secondary/30 border-t border-gray-800/50">
-                <Button asChild className={`w-full bg-primary hover:bg-primary/80 text-white gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <Link href="/admin/jobs">
-                    <ArrowRight className={`h-4 w-4 ${isRTL ? 'flip-x' : ''}`} />
-                    View All Applications
-                  </Link>
-                </Button>
+                  <Button asChild className={`w-full bg-primary hover:bg-primary/80 text-white gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <Link href="/admin/store">
+                      <ArrowRight className={`h-4 w-4 ${isRTL ? 'flip-x' : ''}`} />
+                      Manage Store
+                    </Link>
+                  </Button>
               </CardFooter>
             </Card>
           </TabsContent>

@@ -147,7 +147,7 @@ export default function Store() {
           <div className="container mx-auto px-4 relative z-10">
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 cyberpunk-border inline-block">
-                <span className="text-primary animate-text-flicker">{t('common.crazytown', 'CRAZY TOWN')}</span> {t('store.title', 'STORE')}
+                <span className="text-primary animate-text-flicker">{t('common.crazytown', 'WEXON STORE')}</span>
               </h1>
               <p className="text-xl text-gray-400 max-w-2xl mx-auto">
                 {t('store.subtitle', 'Enhance your role-playing experience with our premium items and packages')}

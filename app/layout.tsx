@@ -39,7 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   } catch (error) {
     console.error('Error fetching metadata:', error);
-    // Fallback metadata
+  
     return {
       title: '𝐅𝐚𝐬𝐭 | 𝐒𝐭𝐨𝐫𝐞',
       description: 'Official store for Fast server',

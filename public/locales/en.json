@@ -1,8 +1,8 @@
 {
   "common": {
-    "crazytown": "Wexon Storex",
-    "site_name_first": "Wexonx",
-    "site_name_second": "Storex",
+    "crazytown": "Wexon Store",
+    "site_name_first": "Wexon",
+    "site_name_second": "Store",
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
@@ -17,7 +17,7 @@
     "learn_more": "Learn More"
   },
   "hero": {
-    "title": "Welcome to Wexonx Store",
+    "title": "Welcome to Wexon Store",
     "subtitle": "The ultimate gaming experience",
     "cta": "Explore Store",
     "join_now": "// Join Now"

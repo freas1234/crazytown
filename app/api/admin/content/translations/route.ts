@@ -1,27 +1,7 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../../lib/auth-config";
-import * as fs from 'fs';
-import * as path from 'path';
-
-
-const writeTranslationFile = async (language: string, translations: any): Promise<boolean> => {
-  try {
-    const filePath = path.join(process.cwd(), 'public', 'locales', `${language}.json`);
-    
-    // Validate that translations is a valid object
-    if (!translations || typeof translations !== 'object') {
-      throw new Error(`Invalid translations data: expected object, got ${typeof translations}`);
-    }
-    
-    const jsonString = JSON.stringify(translations, null, 2);
-    await fs.promises.writeFile(filePath, jsonString, 'utf8');
-    return true;
-  } catch (error) {
-    console.error(`Error writing to ${language}.json:`, error);
-    return false;
-  }
-};
+import { db } from "../../../../../lib/db";
 
 
 export async function GET(request: NextRequest) {
@@ -41,18 +21,39 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    const filePath = path.join(process.cwd(), 'public', 'locales', `${language}.json`);
-    
     try {
-      const fileContent = await fs.promises.readFile(filePath, 'utf8');
-      const translations = JSON.parse(fileContent);
+      // Try to get translations from database first
+      const dbTranslations = await db.content.findByType(`translations_${language}`);
       
-      return NextResponse.json({
-        success: true,
-        translations
-      });
+      if (dbTranslations && dbTranslations.data) {
+        return NextResponse.json({
+          success: true,
+          translations: dbTranslations.data
+        });
+      }
+      
+      // Fallback to static files if not in database
+      const fs = await import('fs');
+      const path = await import('path');
+      const filePath = path.join(process.cwd(), 'public', 'locales', `${language}.json`);
+      
+      try {
+        const fileContent = await fs.promises.readFile(filePath, 'utf8');
+        const translations = JSON.parse(fileContent);
+        
+        return NextResponse.json({
+          success: true,
+          translations
+        });
+      } catch (fileError) {
+        console.error(`Error reading ${language}.json:`, fileError);
+        return NextResponse.json(
+          { error: `Failed to read ${language} translations` },
+          { status: 500 }
+        );
+      }
     } catch (error) {
-      console.error(`Error reading ${language}.json:`, error);
+      console.error(`Error reading ${language} translations:`, error);
       return NextResponse.json(
         { error: `Failed to read ${language} translations` },
         { status: 500 }
@@ -93,19 +94,29 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    const success = await writeTranslationFile(language, translations);
-    
-    if (!success) {
+    // Validate that translations is a valid object
+    if (!translations || typeof translations !== 'object') {
       return NextResponse.json(
-        { error: `Failed to write ${language} translations` },
-        { status: 500 }
+        { error: `Invalid translations data: expected object, got ${typeof translations}` },
+        { status: 400 }
       );
     }
     
-    return NextResponse.json({
-      success: true,
-      message: `${language} translations updated successfully`
-    });
+    try {
+      // Save translations to database
+      await db.content.upsert(`translations_${language}`, translations);
+      
+      return NextResponse.json({
+        success: true,
+        message: `${language} translations updated successfully`
+      });
+    } catch (error) {
+      console.error(`Error saving ${language} translations to database:`, error);
+      return NextResponse.json(
+        { error: `Failed to save ${language} translations` },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error("Error in PUT translations:", error);
     return NextResponse.json(

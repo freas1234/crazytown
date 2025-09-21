@@ -51,8 +51,8 @@ export default function TranslationsPage() {
         setLoading(true);
         
         const [enResult, arResult] = await Promise.all([
-          adminGet('/api/admin/content/translations?language=en'),
-          adminGet('/api/admin/content/translations?language=ar')
+          fetch('/api/translations?language=en').then(res => res.json()),
+          fetch('/api/translations?language=ar').then(res => res.json())
         ]);
         
         if (!enResult.success || !arResult.success) {

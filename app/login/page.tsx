@@ -31,6 +31,13 @@ function LoginContent() {
   // Use localizedContent instead of t
   const t = localizedContent;
 
+  // Redirect logged-in users to home page
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/');
+    }
+  }, [user, authLoading, router]);
+
   useEffect(() => {
     if (error === 'InvalidCredentials') {
       setErrorMessage(t?.errorMessages?.invalidCredentials || 'Invalid email or password');
@@ -91,12 +98,28 @@ function LoginContent() {
     });
   };
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
         <main className="flex-grow flex items-center justify-center">
           <div className="loading-spinner"></div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // If user is logged in, don't render the login form
+  if (user) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-400">Redirecting...</p>
+          </div>
         </main>
         <Footer />
       </div>

@@ -21,31 +21,19 @@ export function RoleGuard({
   const router = useRouter();
 
   useEffect(() => {
-    
-    console.log('RoleGuard check:', {
-      isLoading,
-      user: user ? { role: user.role, id: user.id } : null,
-      allowedRoles,
-      hasAccess: user && allowedRoles.includes(user.role)
-    });
-  }, [user, isLoading, allowedRoles]);
+    // Only redirect if we're not loading and user doesn't have access
+    if (!isLoading && (!user || !allowedRoles.includes(user.role)) && redirectTo) {
+      router.push(redirectTo);
+    }
+  }, [user, isLoading, allowedRoles, redirectTo, router]);
 
   if (isLoading) {
-    console.log('RoleGuard: Still loading user data');
     return <div className="animate-pulse p-4">Loading...</div>;
   }
 
   if (!user || !allowedRoles.includes(user.role)) {
-    console.log('RoleGuard: Access denied', { user: user?.role, allowedRoles });
-    if (redirectTo) {
-      console.log('RoleGuard: Redirecting to', redirectTo);
-      router.push(redirectTo);
-      return null;
-    }
-    
     return <>{fallback}</>;
   }
   
-  console.log('RoleGuard: Access granted for', user.role);
   return <>{children}</>;
 } 

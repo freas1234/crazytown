@@ -8,7 +8,14 @@ import * as path from 'path';
 const writeTranslationFile = async (language: string, translations: any): Promise<boolean> => {
   try {
     const filePath = path.join(process.cwd(), 'public', 'locales', `${language}.json`);
-    await fs.promises.writeFile(filePath, JSON.stringify(translations, null, 2), 'utf8');
+    
+    // Validate that translations is a valid object
+    if (!translations || typeof translations !== 'object') {
+      throw new Error(`Invalid translations data: expected object, got ${typeof translations}`);
+    }
+    
+    const jsonString = JSON.stringify(translations, null, 2);
+    await fs.promises.writeFile(filePath, jsonString, 'utf8');
     return true;
   } catch (error) {
     console.error(`Error writing to ${language}.json:`, error);

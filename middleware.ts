@@ -29,7 +29,21 @@ export async function middleware(request: NextRequest) {
     // Continue with normal flow if maintenance check fails
   }
 
-  if (path.startsWith('/admin') || path.startsWith('/profile')) {
+  if (path.startsWith('/admin')) {
+    const hasSession = request.cookies.has('next-auth.session-token') || 
+                       request.cookies.has('__Secure-next-auth.session-token') ||
+                       request.cookies.has('token');
+    
+    if (!hasSession) {
+      const url = new URL('/login', request.url);
+      url.searchParams.set('redirectTo', path);
+      return NextResponse.redirect(url);
+    }
+    // For admin routes, let the RoleGuard component handle role-based access
+    // The middleware only checks for session existence, not role
+  }
+  
+  if (path.startsWith('/profile')) {
     const hasSession = request.cookies.has('next-auth.session-token') || 
                        request.cookies.has('__Secure-next-auth.session-token') ||
                        request.cookies.has('token');

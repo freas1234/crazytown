@@ -50,7 +50,7 @@ export default function Hero() {
         <div className="mb-6 inline-block relative">
           <span className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-transparent rounded-lg blur-lg"></span>
           <h1 className="relative text-4xl md:text-6xl font-display font-bold mb-2 cyberpunk-border">
-            <span className="text-white animate-text-flicker">{t('hero.title', 'Welcome to Crazy Town FiveM Server')}</span>
+            <span className="text-white animate-text-flicker">{t('hero.title', 'Welcome to  Wexon Store')}</span>
           </h1>
         </div>
         

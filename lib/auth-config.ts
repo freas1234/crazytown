@@ -38,7 +38,6 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          console.log("User authenticated with role:", user.role);
           
           return {
             id: user.id,
@@ -57,9 +56,7 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async jwt({ token, account, profile, user }) {    
-      console.log("JWT callback - incoming token:", token);
-      console.log("JWT callback - incoming user:", user);
+    async jwt({ token, account, profile, user }) {
       
       const newToken = { ...token };
       
@@ -73,7 +70,6 @@ export const authOptions: NextAuthOptions = {
             });
             
             if (dbUser) {
-              console.log("JWT callback - Discord user found in DB with role:", dbUser.role);
               newToken.userId = dbUser.id;
               newToken.username = dbUser.username || "";
               newToken.role = dbUser.role || "user";
@@ -98,7 +94,6 @@ export const authOptions: NextAuthOptions = {
         
         // Make sure to set the role from the user object
         newToken.role = user.role || "user";
-        console.log("JWT callback - Setting role from user:", newToken.role);
         
         newToken.accessToken = account.access_token;
         
@@ -107,19 +102,15 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      console.log("JWT callback - final token:", newToken);
       return newToken;
     },
     async session({ session, token }) {
-      console.log("Session callback - incoming session:", session);
-      console.log("Session callback - incoming token:", token);
       
       if (session.user) {
         session.user.id = token.userId || token.sub || "";
         
         // Make sure to set the role from the token
         session.user.role = token.role || "user";
-        console.log("Session callback - Setting role from token:", session.user.role);
         
         if (typeof token.username === 'string') {
           session.user.username = token.username;
@@ -132,7 +123,6 @@ export const authOptions: NextAuthOptions = {
         session.user.discordId = token.discordId;
       }
       
-      console.log("Session callback - final session:", session);
       return session;
     },
     async signIn({ user, account, profile }) {
@@ -157,7 +147,6 @@ export const authOptions: NextAuthOptions = {
           }
 
           if (dbUser) {
-            console.log("SignIn callback - Updating existing user with role:", dbUser.role);
             await db.user.update({
               where: { id: dbUser.id },
               data: {
@@ -168,7 +157,6 @@ export const authOptions: NextAuthOptions = {
           } else {
             const username = user.name || `user${account.providerAccountId.substring(0, 6)}`;
             
-            console.log("SignIn callback - Creating new user with role: user");
             const newUser = await db.user.create({
               data: {
                 email: user.email || `${account.providerAccountId}@discord.user`,

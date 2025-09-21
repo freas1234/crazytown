@@ -50,25 +50,21 @@ export default function TranslationsPage() {
       try {
         setLoading(true);
         
-        
-        const [enRes, arRes] = await Promise.all([
-          fetch('/locales/en.json'),
-          fetch('/locales/ar.json')
+        const [enResult, arResult] = await Promise.all([
+          adminGet('/api/admin/content/translations?language=en'),
+          adminGet('/api/admin/content/translations?language=ar')
         ]);
         
-        if (!enRes.ok || !arRes.ok) {
-          throw new Error('Failed to fetch translations');
+        if (!enResult.success || !arResult.success) {
+          throw new Error(enResult.error || arResult.error || 'Failed to fetch translations');
         }
         
-        const enData = await enRes.json();
-        const arData = await arRes.json();
-        
         setTranslations({
-          en: enData, 
-          ar: arData
+          en: enResult.data.translations, 
+          ar: arResult.data.translations
         });
         
-        const topLevelKeys = new Set(Object.keys(enData));
+        const topLevelKeys = new Set(Object.keys(enResult.data.translations));
         setExpandedSections(topLevelKeys);
         
         setLoading(false);

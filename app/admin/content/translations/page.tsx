@@ -60,11 +60,11 @@ export default function TranslationsPage() {
         }
         
         setTranslations({
-          en: enResult.data.translations, 
-          ar: arResult.data.translations
+          en: enResult.translations, 
+          ar: arResult.translations
         });
         
-        const topLevelKeys = new Set(Object.keys(enResult.data.translations));
+        const topLevelKeys = new Set(Object.keys(enResult.translations));
         setExpandedSections(topLevelKeys);
         
         setLoading(false);

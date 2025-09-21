@@ -113,7 +113,7 @@ export default function AdminContactPage() {
     const fetchContent = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/admin/content/contact');
+        const response = await fetch('/api/admin/content?type=contact');
         
         if (!response.ok) {
           throw new Error('Failed to fetch contact content');
@@ -293,12 +293,12 @@ export default function AdminContactPage() {
     try {
       setSaving(true);
       
-      const response = await fetch('/api/admin/content/contact', {
+      const response = await fetch('/api/admin/content', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ type: 'contact', content }),
       });
       
       if (!response.ok) {

@@ -12,44 +12,21 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    try {
-      // Try to get translations from database first
-      const dbTranslations = await db.content.findByType(`translations_${language}`);
-      
-      if (dbTranslations && dbTranslations.data) {
-        return NextResponse.json({
-          success: true,
-          translations: dbTranslations.data
-        });
-      }
-      
-      // Fallback to static files if not in database
-      const fs = await import('fs');
-      const path = await import('path');
-      const filePath = path.join(process.cwd(), 'public', 'locales', `${language}.json`);
-      
-      try {
-        const fileContent = await fs.promises.readFile(filePath, 'utf8');
-        const translations = JSON.parse(fileContent);
-        
-        return NextResponse.json({
-          success: true,
-          translations
-        });
-      } catch (fileError) {
-        console.error(`Error reading ${language}.json:`, fileError);
-        return NextResponse.json(
-          { error: `Failed to read ${language} translations` },
-          { status: 500 }
-        );
-      }
-    } catch (error) {
-      console.error(`Error reading ${language} translations:`, error);
-      return NextResponse.json(
-        { error: `Failed to read ${language} translations` },
-        { status: 500 }
-      );
+    // Get translations from database
+    const dbTranslations = await db.content.findByType(`translations_${language}`);
+    
+    if (dbTranslations && dbTranslations.data) {
+      return NextResponse.json({
+        success: true,
+        translations: dbTranslations.data
+      });
     }
+    
+    // If no translations found in database, return empty object
+    return NextResponse.json({
+      success: true,
+      translations: {}
+    });
   } catch (error) {
     console.error("Error in GET translations:", error);
     return NextResponse.json(

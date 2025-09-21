@@ -21,7 +21,7 @@ export function usePageContent(contentType: string) {
       setError(null);
       
       try {
-        const response = await fetch(`/api/content/${contentType}`);
+        const response = await fetch(`/api/content?type=${contentType}`);
         if (!response.ok) {
           throw new Error(`Failed to fetch ${contentType} content`);
         }

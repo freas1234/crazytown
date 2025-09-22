@@ -35,13 +35,13 @@ export default function MetadataContentPage() {
   useEffect(() => {
     async function fetchContent() {
       try {
-        const response = await fetch('/api/admin/content?type=metadata');
+        const response = await fetch('/api/admin/content/metadata');
         if (response.ok) {
           const data = await response.json();
-          if (data.content) {
+          if (data.content && data.content.data) {
             setMetadata({
               ...metadata,
-              ...data.content
+              ...data.content.data
             });
           }
         }
@@ -62,12 +62,12 @@ export default function MetadataContentPage() {
     setSuccess(null);
     
     try {
-      const response = await fetch('/api/admin/content', {
-        method: 'PUT',
+      const response = await fetch('/api/admin/content/metadata', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ type: 'metadata', content: metadata }),
+        body: JSON.stringify({ data: metadata }),
       });
       
       if (response.ok) {

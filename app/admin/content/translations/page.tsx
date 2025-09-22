@@ -15,7 +15,6 @@ import RuleTranslationHelper from '../../../../components/admin/RuleTranslationH
 import { Separator } from '../../../../components/ui/separator';
 import { Badge } from '../../../../components/ui/badge';
 import Link from 'next/link';
-import { adminGet, adminPost, adminPut } from '../../../../lib/admin-api';
 
 type NestedObject = {
   [key: string]: string | NestedObject;
@@ -44,33 +43,53 @@ export default function TranslationsPage() {
   });
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
   const [maintenanceSaving, setMaintenanceSaving] = useState(false);
+  const [stats, setStats] = useState<{
+    totalKeys: number;
+    enTranslations: number;
+    arTranslations: number;
+    missingEn: number;
+    missingAr: number;
+    completionRate: {
+      en: number;
+      ar: number;
+    };
+  } | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   useEffect(() => {
     const fetchTranslations = async () => {
       try {
         setLoading(true);
         
-        const [enResult, arResult] = await Promise.all([
-          fetch('/api/translations?language=en').then(res => res.json()),
-          fetch('/api/translations?language=ar').then(res => res.json())
+        // Fetch translations from database via API
+        const [enRes, arRes] = await Promise.all([
+          fetch('/api/admin/content/translations?language=en'),
+          fetch('/api/admin/content/translations?language=ar')
         ]);
         
-        if (!enResult.success || !arResult.success) {
-          throw new Error(enResult.error || arResult.error || 'Failed to fetch translations');
+        if (!enRes.ok || !arRes.ok) {
+          throw new Error('Failed to fetch translations from database');
+        }
+        
+        const enData = await enRes.json();
+        const arData = await arRes.json();
+        
+        if (!enData.success || !arData.success) {
+          throw new Error('API returned error status');
         }
         
         setTranslations({
-          en: enResult.translations, 
-          ar: arResult.translations
+          en: enData.translations, 
+          ar: arData.translations
         });
         
-        const topLevelKeys = new Set(Object.keys(enResult.translations));
+        const topLevelKeys = new Set(Object.keys(enData.translations));
         setExpandedSections(topLevelKeys);
         
         setLoading(false);
       } catch (error) {
         console.error('Error fetching translations:', error);
-        toast.error('Failed to load translations');
+        toast.error('Failed to load translations from database');
         setLoading(false);
       }
     };
@@ -82,9 +101,12 @@ export default function TranslationsPage() {
     const fetchMaintenanceContent = async () => {
       try {
         setMaintenanceLoading(true);
-        const result = await adminGet('/api/admin/maintenance');
-        if (result.success && result.data.content) {
-          setMaintenanceContent(result.data.content);
+        const response = await fetch('/api/admin/maintenance');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.content) {
+            setMaintenanceContent(data.content);
+          }
         }
       } catch (error) {
         console.error('Error fetching maintenance content:', error);
@@ -99,30 +121,64 @@ export default function TranslationsPage() {
     }
   }, [activeView]);
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+        const response = await fetch('/api/admin/content/translations/stats');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setStats(data.stats);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching translation stats:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   const handleSaveTranslations = async () => {
     try {
       setSaving(true);
       
-      const [enResult, arResult] = await Promise.all([
-        adminPut('/api/admin/content/translations', {
-          language: 'en',
-          translations: translations.en
+      
+      const [enRes, arRes] = await Promise.all([
+        fetch('/api/admin/content/translations', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            language: 'en',
+            translations: translations.en
+          }),
         }),
-        adminPut('/api/admin/content/translations', {
-          language: 'ar',
-          translations: translations.ar
+        fetch('/api/admin/content/translations', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            language: 'ar',
+            translations: translations.ar
+          }),
         })
       ]);
       
-      if (!enResult.success || !arResult.success) {
-        throw new Error(enResult.error || arResult.error || 'Failed to save translations');
+      if (!enRes.ok || !arRes.ok) {
+        throw new Error('Failed to save translations');
       }
       
       toast.success('Translations saved successfully');
+      setSaving(false);
     } catch (error) {
       console.error('Error saving translations:', error);
-      toast.error(`Error saving translations: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
+      toast.error('Failed to save translations');
       setSaving(false);
     }
   };
@@ -131,18 +187,24 @@ export default function TranslationsPage() {
     try {
       setMaintenanceSaving(true);
       
-      const result = await adminPost('/api/admin/maintenance', {
-        content: maintenanceContent
+      const response = await fetch('/api/admin/maintenance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: maintenanceContent
+        }),
       });
       
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to save maintenance content');
+      if (!response.ok) {
+        throw new Error('Failed to save maintenance content');
       }
       
       toast.success('Maintenance content saved successfully');
     } catch (error) {
       console.error('Error saving maintenance content:', error);
-      toast.error(`Error saving maintenance content: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error('Failed to save maintenance content');
     } finally {
       setMaintenanceSaving(false);
     }
@@ -344,6 +406,29 @@ export default function TranslationsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {stats && (
+              <div className="mb-6 p-4 bg-gray-900/50 rounded-lg border border-gray-800">
+                <h3 className="text-lg font-medium text-white mb-3">Translation Statistics</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">{stats.totalKeys}</div>
+                    <div className="text-sm text-gray-400">Total Keys</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-400">{stats.enTranslations}</div>
+                    <div className="text-sm text-gray-400">English ({stats.completionRate.en}%)</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-400">{stats.arTranslations}</div>
+                    <div className="text-sm text-gray-400">Arabic ({stats.completionRate.ar}%)</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-yellow-400">{stats.missingEn + stats.missingAr}</div>
+                    <div className="text-sm text-gray-400">Missing</div>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="flex items-center space-x-4">
               <Button 
                 variant={activeView === 'all' ? 'default' : 'outline'} 

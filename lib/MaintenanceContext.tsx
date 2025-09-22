@@ -25,14 +25,11 @@ export function MaintenanceProvider({ children }: { children: ReactNode }) {
 
   const fetchMaintenanceStatus = async () => {
     try {
-      console.log('Fetching maintenance status...');
       const response = await fetch('/api/maintenance');
       if (response.ok) {
         const data = await response.json();
-        console.log('Maintenance status response:', data);
         if (data.success !== false) {
           setIsMaintenanceMode(data.maintenanceMode);
-          console.log('Set maintenance mode to:', data.maintenanceMode);
           
           // If maintenance mode is enabled and user is not admin, redirect to maintenance page
           if (data.maintenanceMode && !isAdmin) {
@@ -48,7 +45,6 @@ export function MaintenanceProvider({ children }: { children: ReactNode }) {
   const toggleMaintenanceMode = async (enabled?: boolean) => {
     try {
       const action = enabled !== undefined ? (enabled ? 'enable' : 'disable') : 'toggle';
-      console.log('Toggling maintenance mode with action:', action);
       
       const response = await fetch('/api/admin/maintenance', {
         method: 'POST',
@@ -63,7 +59,6 @@ export function MaintenanceProvider({ children }: { children: ReactNode }) {
       }
       
       const data = await response.json();
-      console.log('Toggle maintenance mode response:', data);
       
       if (data.success) {
         setIsMaintenanceMode(data.maintenanceMode);

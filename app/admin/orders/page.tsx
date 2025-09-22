@@ -1,14 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { RoleGuard } from '../../../components/RoleGuard';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
-import { Skeleton } from '../../../components/ui/skeleton';
 import { Badge } from '../../../components/ui/badge';
+import { Input } from '../../../components/ui/input';
+import { 
+  ShoppingCart, 
+  Search, 
+  RefreshCw, 
+  Eye, 
+  Calendar,
+  User,
+  Package,
+  DollarSign,
+  Filter,
+  MoreHorizontal
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Order {
@@ -35,15 +45,14 @@ interface Order {
 }
 
 export default function AdminOrders() {
-  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      
       const response = await fetch('/api/admin/orders');
       
       if (!response.ok) {
@@ -51,11 +60,11 @@ export default function AdminOrders() {
       }
       
       const data = await response.json();
-      setOrders(data.orders);
-      setLoading(false);
+      setOrders(data.orders || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast.error('Failed to load orders');
+    } finally {
       setLoading(false);
     }
   };
@@ -94,15 +103,22 @@ export default function AdminOrders() {
     }
   };
   
-  const filteredOrders = activeTab === 'all' 
-    ? orders 
-    : orders.filter(order => order.status === activeTab);
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = searchTerm === '' || 
+      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.user?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
   
   const statusColors = {
-    pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/20',
-    paid: 'bg-blue-500/20 text-blue-400 border-blue-500/20',
-    completed: 'bg-green-500/20 text-green-400 border-green-500/20',
-    cancelled: 'bg-red-500/20 text-red-400 border-red-500/20',
+    pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+    paid: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    completed: 'bg-green-500/20 text-green-400 border-green-500/30',
+    cancelled: 'bg-red-500/20 text-red-400 border-red-500/30',
   };
   
   const formatDate = (dateString: string | Date) => {
@@ -116,191 +132,257 @@ export default function AdminOrders() {
     }).format(date);
   };
 
+  const getStatusCount = (status: string) => {
+    return orders.filter(order => order.status === status).length;
+  };
+
   return (
     <RoleGuard allowedRoles={['admin', 'owner']} redirectTo="/login">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-white">
-            <span className="cyberpunk-border inline-block">Order Management</span>
-          </h1>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+              <ShoppingCart className="h-8 w-8 text-primary" />
+              Order Management
+            </h1>
+            <p className="text-gray-400 mt-1">Manage and track customer orders</p>
+          </div>
           <Button 
             onClick={handleRefresh}
             disabled={loading}
-            className="bg-primary hover:bg-primary/80 text-white"
+            className="gap-2"
           >
-            {loading ? (
-              <span className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Refreshing...
-              </span>
-            ) : (
-              <span className="flex items-center">
-                <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Refresh Orders
-              </span>
-            )}
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
           </Button>
         </div>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="bg-secondary/50 border border-gray-800 mb-6">
-            <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-white">
-              All Orders
-            </TabsTrigger>
-            <TabsTrigger value="pending" className="data-[state=active]:bg-primary data-[state=active]:text-white">
-              Pending
-            </TabsTrigger>
-            <TabsTrigger value="paid" className="data-[state=active]:bg-primary data-[state=active]:text-white">
-              Paid
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="data-[state=active]:bg-primary data-[state=active]:text-white">
-              Completed
-            </TabsTrigger>
-            <TabsTrigger value="cancelled" className="data-[state=active]:bg-primary data-[state=active]:text-white">
-              Cancelled
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value={activeTab} className="mt-0">
-            {loading ? (
-              <div className="space-y-4">
-                {[...Array(3)].map((_, index) => (
-                  <Card key={index} className="bg-secondary/80 border-gray-800">
-                    <CardContent className="p-6">
-                      <div className="animate-pulse">
-                        <div className="flex justify-between items-center mb-4">
-                          <div className="h-6 bg-gray-800 rounded w-1/4"></div>
-                          <div className="h-6 bg-gray-800 rounded w-1/6"></div>
-                        </div>
-                        <div className="h-4 bg-gray-800 rounded w-1/3 mb-2"></div>
-                        <div className="h-4 bg-gray-800 rounded w-1/2 mb-4"></div>
-                        <div className="h-10 bg-gray-800 rounded w-full"></div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <Card className="bg-gray-800/50 border-gray-700">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-400">Total</p>
+                  <p className="text-2xl font-bold text-white">{orders.length}</p>
+                </div>
+                <ShoppingCart className="h-8 w-8 text-blue-400" />
               </div>
-            ) : filteredOrders.length === 0 ? (
-              <Card className="bg-secondary/80 border-gray-800">
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-800/50 border-gray-700">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-400">Pending</p>
+                  <p className="text-2xl font-bold text-yellow-400">{getStatusCount('pending')}</p>
+                </div>
+                <Package className="h-8 w-8 text-yellow-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-800/50 border-gray-700">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-400">Paid</p>
+                  <p className="text-2xl font-bold text-blue-400">{getStatusCount('paid')}</p>
+                </div>
+                <DollarSign className="h-8 w-8 text-blue-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-800/50 border-gray-700">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-400">Completed</p>
+                  <p className="text-2xl font-bold text-green-400">{getStatusCount('completed')}</p>
+                </div>
+                <Package className="h-8 w-8 text-green-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-800/50 border-gray-700">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-400">Cancelled</p>
+                  <p className="text-2xl font-bold text-red-400">{getStatusCount('cancelled')}</p>
+                </div>
+                <Package className="h-8 w-8 text-red-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <Card className="bg-gray-800/50 border-gray-700">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search orders by ID, customer name or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
+                />
+              </div>
+              <div className="flex gap-2">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white text-sm"
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="paid">Paid</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading orders...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Orders List */}
+        {!loading && (
+          <>
+            {filteredOrders.length === 0 ? (
+              <Card className="bg-gray-800/50 border-gray-700">
                 <CardContent className="flex flex-col items-center justify-center py-12">
-                  <div className="text-gray-500 mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl text-white mb-2">No orders found</h3>
-                  <p className="text-gray-400">
-                    {activeTab === 'all' 
-                      ? 'There are no orders in the system yet.' 
-                      : `There are no orders with status "${activeTab}".`}
+                  <ShoppingCart className="h-16 w-16 text-gray-400 mb-4" />
+                  <h3 className="text-xl font-medium text-white mb-2">
+                    {searchTerm || statusFilter !== 'all' ? 'No orders found' : 'No orders yet'}
+                  </h3>
+                  <p className="text-gray-400 text-center">
+                    {searchTerm || statusFilter !== 'all' 
+                      ? 'Try adjusting your search or filter criteria' 
+                      : 'Orders will appear here when customers make purchases'}
                   </p>
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {filteredOrders.map(order => (
-                  <Card key={order.id} className="bg-secondary/80 border-gray-800">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                  <Card key={order.id} className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
                         <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-semibold text-white">Order #{order.id.substring(0, 8)}</h3>
-                            <Badge className={statusColors[order.status]}>
-                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-gray-400">
-                            {formatDate(order.createdAt)} • {order.paymentMethod.toUpperCase()} • ${order.total.toFixed(2)}
+                          <h3 className="font-medium text-white">Order #{order.id.substring(0, 8)}</h3>
+                          <p className="text-sm text-gray-400 flex items-center gap-1 mt-1">
+                            <Calendar className="h-3 w-3" />
+                            {formatDate(order.createdAt)}
                           </p>
                         </div>
-                        
-                        <div className="mt-2 md:mt-0">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="border-primary/30 hover:bg-primary/20 hover:text-primary"
-                            asChild
-                          >
-                            <Link href={`/admin/orders/${order.id}`}>
-                              View Details
-                            </Link>
-                          </Button>
+                        <Badge className={statusColors[order.status]}>
+                          {order.status}
+                        </Badge>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-sm">
+                          <User className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-300">
+                            {order.user ? (
+                              <>
+                                <span className="text-white">{order.user.username}</span>
+                                <span className="text-gray-400 ml-1">• {order.user.email}</span>
+                              </>
+                            ) : (
+                              <span className="text-gray-400 italic">User not available</span>
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm">
+                          <DollarSign className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-300">
+                            ${order.total.toFixed(2)} • {order.paymentMethod.toUpperCase()}
+                          </span>
+                        </div>
+
+                        <div className="text-sm">
+                          <p className="text-gray-400 mb-1">Items ({order.items.length}):</p>
+                          <div className="space-y-1">
+                            {order.items.slice(0, 2).map((item, index) => (
+                              <div key={index} className="flex justify-between text-gray-300">
+                                <span className="truncate">{item.name} × {item.quantity}</span>
+                                <span>${(item.price * item.quantity).toFixed(2)}</span>
+                              </div>
+                            ))}
+                            {order.items.length > 2 && (
+                              <p className="text-gray-400 text-xs">
+                                +{order.items.length - 2} more items
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-300 mb-2">Customer</h4>
-                        <p className="text-sm text-gray-400">
-                          {order.user ? (
-                            <>
-                              <span className="text-white">{order.user.username}</span> • {order.user.email}
-                            </>
-                          ) : (
-                            <span className="italic">User information not available</span>
-                          )}
-                        </p>
-                      </div>
-                      
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-300 mb-2">Items</h4>
-                        <ul className="text-sm text-gray-400 space-y-1">
-                          {order.items.map((item, index) => (
-                            <li key={index} className="flex justify-between">
-                              <span>
-                                {item.name} × {item.quantity}
-                              </span>
-                              <span>${(item.price * item.quantity).toFixed(2)}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      
-                      <div className="pt-4 border-t border-gray-800">
-                        <h4 className="text-sm font-medium text-gray-300 mb-2">Update Status</h4>
-                        <div className="flex flex-wrap gap-2">
+
+                      <div className="flex items-center gap-2 mt-4 pt-3 border-t border-gray-700">
+                        <Button size="sm" variant="ghost" className="h-8 px-2 text-blue-400 hover:bg-blue-500/20" asChild>
+                          <Link href={`/admin/orders/${order.id}`}>
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Link>
+                        </Button>
+                        
+                        <div className="flex gap-1 ml-auto">
                           {order.status !== 'pending' && (
                             <Button 
-                              variant="outline" 
                               size="sm" 
-                              className="border-yellow-500/30 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20"
+                              variant="outline" 
+                              className="h-8 px-2 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/20"
                               onClick={() => handleUpdateStatus(order.id, 'pending')}
                             >
-                              Mark as Pending
+                              Pending
                             </Button>
                           )}
                           {order.status !== 'paid' && (
                             <Button 
-                              variant="outline" 
                               size="sm" 
-                              className="border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
+                              variant="outline" 
+                              className="h-8 px-2 text-blue-400 border-blue-500/30 hover:bg-blue-500/20"
                               onClick={() => handleUpdateStatus(order.id, 'paid')}
                             >
-                              Mark as Paid
+                              Paid
                             </Button>
                           )}
                           {order.status !== 'completed' && (
                             <Button 
-                              variant="outline" 
                               size="sm" 
-                              className="border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20"
+                              variant="outline" 
+                              className="h-8 px-2 text-green-400 border-green-500/30 hover:bg-green-500/20"
                               onClick={() => handleUpdateStatus(order.id, 'completed')}
                             >
-                              Mark as Completed
+                              Complete
                             </Button>
                           )}
                           {order.status !== 'cancelled' && (
                             <Button 
-                              variant="outline" 
                               size="sm" 
-                              className="border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                              variant="outline" 
+                              className="h-8 px-2 text-red-400 border-red-500/30 hover:bg-red-500/20"
                               onClick={() => handleUpdateStatus(order.id, 'cancelled')}
                             >
-                              Mark as Cancelled
+                              Cancel
                             </Button>
                           )}
                         </div>
@@ -310,8 +392,8 @@ export default function AdminOrders() {
                 ))}
               </div>
             )}
-          </TabsContent>
-        </Tabs>
+          </>
+        )}
       </div>
     </RoleGuard>
   );

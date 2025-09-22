@@ -59,7 +59,6 @@ export async function connectToDatabase() {
     
     // If the first attempt fails, try with different SSL settings
     try {
-      console.log('Retrying MongoDB connection with different SSL settings...');
       
       const client = await MongoClient.connect(MONGODB_URI, {
         maxPoolSize: 10,
@@ -340,68 +339,221 @@ export const db = {
   },
   
   translations: {
+    // Get all translations for a specific language
+    getByLanguage: async (language: string) => {
+      try {
+        const { db } = await connectToDatabase();
+        const translationsCollection = db.collection('translations');
+        
+        const translations = await translationsCollection.find({ language }).toArray();
+        
+        // Convert array to nested object structure
+        const result: Record<string, any> = {};
+        
+        translations.forEach((translation: any) => {
+          const keys = translation.key.split('.');
+          let current = result;
+          
+          for (let i = 0; i < keys.length - 1; i++) {
+            if (!current[keys[i]]) {
+              current[keys[i]] = {};
+            }
+            current = current[keys[i]];
+          }
+          
+          current[keys[keys.length - 1]] = translation.value;
+        });
+        
+        return result;
+      } catch (error) {
+        console.error('Error fetching translations by language:', error);
+        return {};
+      }
+    },
+    
+    // Get all translations (both languages)
     getAll: async () => {
       try {
         const { db } = await connectToDatabase();
         const translationsCollection = db.collection('translations');
         
-        const translationsDoc = await translationsCollection.findOne({ type: 'translations' });
+        const translations = await translationsCollection.find({}).toArray();
         
-        if (translationsDoc) {
-          return translationsDoc.data;
-        }
-          
-        const defaultTranslations = {
+        const result: Record<string, Record<string, any>> = {
           en: {},
           ar: {}
         };
         
-        await translationsCollection.insertOne({
-          id: uuidv4(),
-          type: 'translations',
-          data: defaultTranslations,
-          createdAt: new Date(),
-          updatedAt: new Date()
+        translations.forEach((translation: any) => {
+          const keys = translation.key.split('.');
+          let current = result[translation.language];
+          
+          for (let i = 0; i < keys.length - 1; i++) {
+            if (!current[keys[i]]) {
+              current[keys[i]] = {};
+            }
+            current = current[keys[i]];
+          }
+          
+          current[keys[keys.length - 1]] = translation.value;
         });
         
-        return defaultTranslations;
+        return result;
       } catch (error) {
-        console.error('Error fetching translations:', error);
+        console.error('Error fetching all translations:', error);
         return { en: {}, ar: {} };
       }
     },
     
-    update: async ({ data }: { data: Record<string, Record<string, string>> }) => {
+    // Get a specific translation by key and language
+    getByKey: async (key: string, language: string) => {
       try {
         const { db } = await connectToDatabase();
         const translationsCollection = db.collection('translations');
         
-        const translationsDoc = await translationsCollection.findOne({ type: 'translations' });
+        const translation = await translationsCollection.findOne({ key, language });
+        return translation?.value || '';
+      } catch (error) {
+        console.error('Error fetching translation by key:', error);
+        return '';
+      }
+    },
+    
+    // Create or update a translation
+    upsert: async (key: string, language: string, value: string, namespace?: string) => {
+      try {
+        const { db } = await connectToDatabase();
+        const translationsCollection = db.collection('translations');
         
-        if (translationsDoc) {
-          await translationsCollection.updateOne(
-            { type: 'translations' },
-            { 
-              $set: { 
-                data,
-                updatedAt: new Date()
-              } 
+        const now = new Date();
+        const updateData = {
+          key,
+          language,
+          value,
+          namespace,
+          updatedAt: now,
+        };
+        
+        const result = await translationsCollection.findOneAndUpdate(
+          { key, language },
+          { 
+            $set: updateData,
+            $setOnInsert: { 
+              id: uuidv4(),
+              createdAt: now 
             }
-          );
-        } else {
-          await translationsCollection.insertOne({
-            id: uuidv4(),
-            type: 'translations',
-            data,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          });
+          },
+          { 
+            upsert: true,
+            returnDocument: 'after'
+          }
+        );
+        
+        return result.value;
+      } catch (error) {
+        console.error('Error upserting translation:', error);
+        return null;
+      }
+    },
+    
+    // Update multiple translations
+    updateMultiple: async (translations: Array<{ key: string; language: string; value: string; namespace?: string }>) => {
+      try {
+        const { db } = await connectToDatabase();
+        const translationsCollection = db.collection('translations');
+        
+        const bulkOps = translations.map(translation => {
+          const now = new Date();
+          return {
+            updateOne: {
+              filter: { key: translation.key, language: translation.language },
+              update: {
+                $set: {
+                  ...translation,
+                  updatedAt: now
+                },
+                $setOnInsert: {
+                  id: uuidv4(),
+                  createdAt: now
+                }
+              },
+              upsert: true
+            }
+          };
+        });
+        
+        const result = await translationsCollection.bulkWrite(bulkOps);
+        return { success: true, modifiedCount: result.modifiedCount, upsertedCount: result.upsertedCount };
+      } catch (error) {
+        console.error('Error updating multiple translations:', error);
+        return { success: false, error: 'Failed to update translations' };
+      }
+    },
+    
+    // Delete a translation
+    delete: async (key: string, language: string) => {
+      try {
+        const { db } = await connectToDatabase();
+        const translationsCollection = db.collection('translations');
+        
+        const result = await translationsCollection.deleteOne({ key, language });
+        return result.deletedCount === 1;
+      } catch (error) {
+        console.error('Error deleting translation:', error);
+        return false;
+      }
+    },
+    
+    // Delete all translations for a language
+    deleteByLanguage: async (language: string) => {
+      try {
+        const { db } = await connectToDatabase();
+        const translationsCollection = db.collection('translations');
+        
+        const result = await translationsCollection.deleteMany({ language });
+        return result.deletedCount;
+      } catch (error) {
+        console.error('Error deleting translations by language:', error);
+        return 0;
+      }
+    },
+    
+    // Get all unique keys
+    getAllKeys: async () => {
+      try {
+        const { db } = await connectToDatabase();
+        const translationsCollection = db.collection('translations');
+        
+        const keys = await translationsCollection.distinct('key');
+        return keys;
+      } catch (error) {
+        console.error('Error fetching all keys:', error);
+        return [];
+      }
+    },
+    
+    // Search translations
+    search: async (query: string, language?: string) => {
+      try {
+        const { db } = await connectToDatabase();
+        const translationsCollection = db.collection('translations');
+        
+        const searchFilter: any = {
+          $or: [
+            { key: { $regex: query, $options: 'i' } },
+            { value: { $regex: query, $options: 'i' } }
+          ]
+        };
+        
+        if (language) {
+          searchFilter.language = language;
         }
         
-        return { success: true };
+        const translations = await translationsCollection.find(searchFilter).toArray();
+        return translations;
       } catch (error) {
-        console.error('Error updating translations:', error);
-        return { success: false, error: 'Failed to update translations' };
+        console.error('Error searching translations:', error);
+        return [];
       }
     }
   }

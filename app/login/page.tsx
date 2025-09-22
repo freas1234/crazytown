@@ -31,13 +31,6 @@ function LoginContent() {
   // Use localizedContent instead of t
   const t = localizedContent;
 
-  // Redirect logged-in users to home page
-  useEffect(() => {
-    if (!authLoading && user) {
-      router.push('/');
-    }
-  }, [user, authLoading, router]);
-
   useEffect(() => {
     if (error === 'InvalidCredentials') {
       setErrorMessage(t?.errorMessages?.invalidCredentials || 'Invalid email or password');
@@ -53,6 +46,13 @@ function LoginContent() {
       setErrorMessage('Authentication error. Please try again.');
     }
   }, [error, t]);
+
+  // Redirect authenticated users away from login page
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push(redirectTo || '/');
+    }
+  }, [user, authLoading, router, redirectTo]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -98,19 +98,23 @@ function LoginContent() {
     });
   };
 
+  // Show loading while checking authentication
   if (isLoading || authLoading) {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
         <main className="flex-grow flex items-center justify-center">
-          <div className="loading-spinner"></div>
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-gray-400">Loading...</span>
+          </div>
         </main>
         <Footer />
       </div>
     );
   }
 
-  // If user is logged in, don't render the login form
+  // If user is authenticated, don't show login form
   if (user) {
     return (
       <div className="flex flex-col min-h-screen">

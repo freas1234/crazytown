@@ -53,6 +53,9 @@ export default function Cart() {
   const [loading, setLoading] = useState(true);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
 
+  // Calculate total number of items in cart
+  const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+
   useEffect(() => {
     const fetchCartData = async () => {
       try {
@@ -142,19 +145,17 @@ export default function Cart() {
   
   const calculateDiscountPercentage = (originalPrice: number, salePrice: number) => {
     if (!originalPrice || !salePrice || originalPrice <= 0 || salePrice >= originalPrice) return null;
-    const discount = ((originalPrice - salePrice) / originalPrice) * 100;
-    return Math.round(discount);
+    return Math.round(((originalPrice - salePrice) / originalPrice) * 100);
   };
-  
+
   const subtotal = cart.reduce((sum, item) => {
-    const price = (item.product?.salePrice && item.product.salePrice > 0) 
-      ? item.product.salePrice 
-      : (item.product?.price || 0);
-    return sum + price * item.quantity;
+    if (!item.product) return sum;
+    const price = item.product.salePrice && item.product.salePrice > 0 ? item.product.salePrice : item.product.price;
+    return sum + (price * item.quantity);
   }, 0);
-  
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  
+
+  const getFinalTotal = () => subtotal;
+
   const proceedToCheckout = async () => {
     try {
       setLoadingCheckout(true);
@@ -182,17 +183,19 @@ export default function Cart() {
         quantity: item.quantity
       }));
       
+      const orderBody = {
+        items: orderItems,
+        paymentMethod: 'paypal',
+        deliveryMethod: 'digital'
+      };
+      
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          items: orderItems,
-          paymentMethod: 'paypal',
-          deliveryMethod: 'digital'
-        }),
+        body: JSON.stringify(orderBody),
       });
       
       if (!response.ok) {
@@ -399,14 +402,19 @@ export default function Cart() {
                             <span className="text-muted-foreground">{t('store.cart.subtotal', 'Subtotal')}</span>
                             <span className="text-white font-medium">${subtotal.toFixed(2)}</span>
                           </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">{t('store.cart.taxes', 'Taxes')}</span>
-                            <span className="text-white font-medium">$0.00</span>
+                          
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">{t('store.cart.taxes', 'Taxes')}</span>
+                              <span className="text-white font-medium">$0.00</span>
+                            </div>
+                            
                           </div>
+                          
                           <Separator className="bg-gray-800/50 my-4" />
                           <div className="flex justify-between items-center">
                             <span className="text-lg font-bold text-white">{t('store.cart.total', 'Total')}</span>
-                            <span className="text-lg font-bold text-primary">${subtotal.toFixed(2)}</span>
+                            <span className="text-lg font-bold text-primary">${getFinalTotal().toFixed(2)}</span>
                           </div>
                         </div>
                       </CardContent>

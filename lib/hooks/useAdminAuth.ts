@@ -10,7 +10,6 @@ export function useAdminAuth() {
 
   useEffect(() => {
     if (!isLoading && !isAdmin) {
-      console.log('Not an admin, redirecting to home');
       router.replace('/');
     }
   }, [isLoading, isAdmin, router]);

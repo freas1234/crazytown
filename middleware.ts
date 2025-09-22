@@ -4,46 +4,37 @@ import type { NextRequest } from 'next/server';
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   
-  // Check for maintenance mode using the API
-  try {
-    const maintenanceUrl = new URL('/api/maintenance', request.url);
-    const maintenanceResponse = await fetch(maintenanceUrl.toString());
-    
-    if (maintenanceResponse.ok) {
-      const data = await maintenanceResponse.json();
+
+  // Only check maintenance mode in production (not during build/development)
+  if (process.env.NODE_ENV === 'production') {
+
+    try {
+      const maintenanceUrl = new URL('/api/maintenance', request.url);
+      const maintenanceResponse = await fetch(maintenanceUrl.toString(), {
+        signal: AbortSignal.timeout(5000)
+      });
       
-      // If maintenance mode is enabled and not accessing allowed paths
-      if (data.maintenanceMode && 
-          !path.startsWith('/api/') && 
-          !path.startsWith('/admin') && 
-          path !== '/maintenance' && 
-          path !== '/login') {
+      if (maintenanceResponse.ok) {
+        const data = await maintenanceResponse.json();
         
-        // Redirect to maintenance page
-        console.log(`Maintenance mode active, redirecting ${path} to /maintenance`);
-        return NextResponse.redirect(new URL('/maintenance', request.url));
+        if (data.maintenanceMode && 
+            !path.startsWith('/api/') && 
+            !path.startsWith('/admin') && 
+            path !== '/maintenance' && 
+            path !== '/login') {
+          
+          console.log(`Maintenance mode active, redirecting ${path} to /maintenance`);
+          return NextResponse.redirect(new URL('/maintenance', request.url));
+        }
       }
+    } catch (error) {
+      console.error('Error checking maintenance mode:', error);
+      // Continue with normal flow if maintenance check fails
+      // This could happen during build time or if the API is not available
     }
-  } catch (error) {
-    console.error('Error checking maintenance mode:', error);
-    // Continue with normal flow if maintenance check fails
   }
 
-  if (path.startsWith('/admin')) {
-    const hasSession = request.cookies.has('next-auth.session-token') || 
-                       request.cookies.has('__Secure-next-auth.session-token') ||
-                       request.cookies.has('token');
-    
-    if (!hasSession) {
-      const url = new URL('/login', request.url);
-      url.searchParams.set('redirectTo', path);
-      return NextResponse.redirect(url);
-    }
-    // For admin routes, let the RoleGuard component handle role-based access
-    // The middleware only checks for session existence, not role
-  }
-  
-  if (path.startsWith('/profile')) {
+  if (path.startsWith('/admin') || path.startsWith('/profile')) {
     const hasSession = request.cookies.has('next-auth.session-token') || 
                        request.cookies.has('__Secure-next-auth.session-token') ||
                        request.cookies.has('token');

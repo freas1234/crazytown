@@ -53,7 +53,7 @@ export default function AboutContentPage() {
   const fetchContent = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/content?type=about');
+      const response = await fetch('/api/admin/content/about');
       
       if (response.ok) {
         const data = await response.json();
@@ -74,12 +74,12 @@ export default function AboutContentPage() {
   const saveContent = async () => {
     try {
       setSaving(true);
-      const response = await fetch('/api/admin/content', {
+      const response = await fetch('/api/admin/content/about', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ type: 'about', content })
+        body: JSON.stringify({ content })
       });
       
       if (response.ok) {

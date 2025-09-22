@@ -23,6 +23,9 @@ interface Order {
     discountPercentage?: number;
   }[];
   total: number;
+  subtotal?: number;
+  couponCode?: string;
+  couponDiscount?: number;
   status: 'pending' | 'paid' | 'completed' | 'cancelled';
   paymentMethod: 'paypal' | 'card';
   paymentId?: string;
@@ -37,6 +40,9 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponApplied, setCouponApplied] = useState(false);
   
   // Unwrap params using React.use()
   const resolvedParams = use(params);
@@ -65,6 +71,22 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
       router.push(`/store/confirmation/${order.id}`);
     }
   }, [order, router]);
+
+  // Load coupon data from localStorage (set in cart page)
+  useEffect(() => {
+    const storedCoupon = localStorage.getItem('checkoutCoupon');
+    if (storedCoupon) {
+      try {
+        const couponData = JSON.parse(storedCoupon);
+        setCouponCode(couponData.code);
+        setCouponDiscount(couponData.discount);
+        setCouponApplied(true);
+      } catch (error) {
+        console.error('Error parsing stored coupon data:', error);
+        localStorage.removeItem('checkoutCoupon');
+      }
+    }
+  }, []);
 
   const handlePaymentSuccess = async (details: any) => {
         try {
@@ -97,6 +119,9 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
         toast.error('There was an error with PayPal. Please try again.');
         setPaymentProcessing(false);
   };
+
+  const getSubtotal = () => order?.subtotal || order?.total || 0;
+  const getFinalTotal = () => Math.max(0, getSubtotal() - couponDiscount);
 
   return (
     <AuthGuard>
@@ -175,15 +200,29 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
                       <div className="pt-4 border-t border-gray-800">
                         <div className="flex justify-between mb-1">
                           <span className="text-gray-400">{t('store.cart.subtotal', 'Subtotal')}</span>
-                          <span className="text-white">${order.total.toFixed(2)}</span>
+                          <span className="text-white">${getSubtotal().toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between mb-4">
-                          <span className="text-gray-400">{t('store.cart.taxes', 'Taxes')}</span>
-                          <span className="text-white">$0.00</span>
+                        
+                        <div className="mb-4">
+                          <div className="flex justify-between mb-2">
+                            <span className="text-gray-400">{t('store.cart.taxes', 'Taxes')}</span>
+                            <span className="text-white">$0.00</span>
+                          </div>
+                          
+                          {couponApplied && (
+                            <div className="flex justify-between items-center mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-green-400 text-sm">Coupon: {couponCode}</span>
+                                <span className="text-gray-400 text-xs">(Applied in cart)</span>
+                              </div>
+                              <span className="text-green-400">-${couponDiscount.toFixed(2)}</span>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex justify-between text-lg font-bold">
+                        
+                        <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-800">
                           <span className="text-white">{t('store.cart.total', 'Total')}</span>
-                          <span className="text-primary">${order.total.toFixed(2)}</span>
+                          <span className="text-primary">${getFinalTotal().toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
@@ -207,7 +246,7 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
 
                         <div className={paymentProcessing ? 'opacity-50 pointer-events-none' : ''}>
                           <PayPalButton
-                            amount={order.total.toString()}
+                            amount={getFinalTotal().toString()}
                             currency="USD"
                             orderId={order.id}
                             onSuccess={handlePaymentSuccess}

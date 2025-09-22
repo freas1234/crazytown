@@ -3,6 +3,22 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../../lib/auth-config";
 import { db } from "../../../../../lib/db";
 
+// Helper function to flatten nested object to key-value pairs
+const flattenTranslations = (obj: any, prefix = ''): Array<{ key: string; value: string }> => {
+  const result: Array<{ key: string; value: string }> = [];
+  
+  for (const [key, value] of Object.entries(obj)) {
+    const newKey = prefix ? `${prefix}.${key}` : key;
+    
+    if (typeof value === 'object' && value !== null) {
+      result.push(...flattenTranslations(value, newKey));
+    } else {
+      result.push({ key: newKey, value: String(value) });
+    }
+  }
+  
+  return result;
+};
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,21 +37,20 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Get translations from database
-    const dbTranslations = await db.content.findByType(`translations_${language}`);
-    
-    if (dbTranslations && dbTranslations.data) {
+    try {
+      const translations = await db.translations.getByLanguage(language);
+      
       return NextResponse.json({
         success: true,
-        translations: dbTranslations.data
+        translations
       });
+    } catch (error) {
+      console.error(`Error reading ${language} translations from database:`, error);
+      return NextResponse.json(
+        { error: `Failed to read ${language} translations` },
+        { status: 500 }
+      );
     }
-    
-    // If no translations found in database, return empty object
-    return NextResponse.json({
-      success: true,
-      translations: {}
-    });
   } catch (error) {
     console.error("Error in GET translations:", error);
     return NextResponse.json(
@@ -45,7 +60,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-    
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -71,26 +85,36 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    // Validate that translations is a valid object
-    if (!translations || typeof translations !== 'object') {
-      return NextResponse.json(
-        { error: `Invalid translations data: expected object, got ${typeof translations}` },
-        { status: 400 }
-      );
-    }
-    
     try {
-      // Save translations to database
-      await db.content.upsert(`translations_${language}`, translations);
+      // Flatten the nested translations object to key-value pairs
+      const flattenedTranslations = flattenTranslations(translations);
+      
+      // Convert to the format expected by updateMultiple
+      const translationUpdates = flattenedTranslations.map(({ key, value }) => ({
+        key,
+        language,
+        value
+      }));
+      
+      const result = await db.translations.updateMultiple(translationUpdates);
+      
+      if (!result.success) {
+        return NextResponse.json(
+          { error: `Failed to update ${language} translations` },
+          { status: 500 }
+        );
+      }
       
       return NextResponse.json({
         success: true,
-        message: `${language} translations updated successfully`
+        message: `${language} translations updated successfully`,
+        modifiedCount: result.modifiedCount,
+        upsertedCount: result.upsertedCount
       });
     } catch (error) {
-      console.error(`Error saving ${language} translations to database:`, error);
+      console.error(`Error updating ${language} translations in database:`, error);
       return NextResponse.json(
-        { error: `Failed to save ${language} translations` },
+        { error: `Failed to update ${language} translations` },
         { status: 500 }
       );
     }

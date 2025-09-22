@@ -55,7 +55,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const loadTranslations = async (lang: Language) => {
     try {
       if (!translations[lang] || Object.keys(translations[lang]).length === 0) {
-        const response = await fetch(`/api/translations?language=${lang}`);
+        const response = await fetch(`/api/translations?lang=${lang}`);
         if (!response.ok) throw new Error(`Failed to load ${lang} translations`);
         const data = await response.json();
         translations[lang] = data.translations || {};

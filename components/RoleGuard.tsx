@@ -22,13 +22,21 @@ export function RoleGuard({
 
   useEffect(() => {
     // Only redirect if we're not loading and user doesn't have access
-    if (!isLoading && (!user || !allowedRoles.includes(user.role)) && redirectTo) {
-      router.push(redirectTo);
+    if (!isLoading && (!user || !allowedRoles.includes(user.role))) {
+      if (redirectTo) {
+        router.push(redirectTo);
+      }
     }
   }, [user, isLoading, allowedRoles, redirectTo, router]);
 
   if (isLoading) {
-    return <div className="animate-pulse p-4">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-pulse p-4">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
   }
 
   if (!user || !allowedRoles.includes(user.role)) {

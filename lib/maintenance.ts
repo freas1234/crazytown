@@ -144,7 +144,6 @@ export async function toggleMaintenanceMode(): Promise<boolean> {
     
     if (result.acknowledged) {
       isMaintenanceMode = newState;
-      console.log(`Maintenance mode ${newState ? 'enabled' : 'disabled'}`);
       return isMaintenanceMode;
     } else {
       console.error('Failed to update maintenance mode in database');

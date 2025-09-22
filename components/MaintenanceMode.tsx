@@ -157,7 +157,7 @@ export default function MaintenanceMode({
       </div>
       
       <div className="mt-8 text-gray-500 text-sm">
-        &copy; {new Date().getFullYear()} Wexon Store
+        &copy; {new Date().getFullYear()} CrazyTown
       </div>
     </div>
   );

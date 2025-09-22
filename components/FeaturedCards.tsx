@@ -42,6 +42,7 @@ export default function FeaturedCards() {
   const { t, locale, isRTL } = useTranslation();
   const [activeTab, setActiveTab] = useState('');
   const [loading, setLoading] = useState(true);
+  const [lastInteraction, setLastInteraction] = useState(Date.now());
   const [featuredCards, setFeaturedCards] = useState<FeaturedCardsData>({
     categories: [],
     newItems: [],
@@ -109,6 +110,39 @@ export default function FeaturedCards() {
 
     fetchFeaturedCards();
   }, []);
+
+    useEffect(() => {
+    const handleUserActivity = () => {
+      setLastInteraction(Date.now());
+    };
+
+    const events = ['mousemove', 'click', 'keydown', 'touchstart', 'scroll'];
+    events.forEach(event => {
+      document.addEventListener(event, handleUserActivity, { passive: true });
+    });
+
+    const intervalId = setInterval(() => {
+      const timeSinceLastInteraction = Date.now() - lastInteraction;
+      
+      if (timeSinceLastInteraction >= 5000 && featuredCards.categories.length > 1) {
+        const currentIndex = featuredCards.categories.findIndex(cat => cat.id === activeTab);
+        const nextIndex = (currentIndex + 1) % featuredCards.categories.length;
+        const nextTab = featuredCards.categories[nextIndex];
+        
+        if (nextTab) {
+          setActiveTab(nextTab.id);
+          setLastInteraction(Date.now());
+        }
+      }
+    }, 1000);
+    
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, handleUserActivity);
+      });
+      clearInterval(intervalId);
+    };
+  }, [activeTab, featuredCards.categories, lastInteraction]);
 
   const renderSkeletons = () => {
     return Array(3).fill(0).map((_, index) => (
@@ -195,15 +229,20 @@ export default function FeaturedCards() {
     return cards.map((card, index) => (
       <Card 
         key={card.id || index} 
-        className="group overflow-hidden bg-card/30 backdrop-blur-sm border-gray-800/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10"
+        className="group overflow-hidden bg-card/30 backdrop-blur-sm border-gray-800/50 hover:border-primary/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 animate-in fade-in slide-in-from-bottom-4"
+        style={{
+          animationDelay: `${index * 150}ms`,
+          animationDuration: '600ms',
+          animationFillMode: 'both'
+        }}
       >
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden rounded-t-lg">
           <AspectRatio ratio={16/9}>
             <Image 
               src={card.imageUrl || '/placeholder-product.jpg'} 
               alt={card.title} 
               fill
-              className="object-cover transition-all duration-500 group-hover:scale-105"
+              className="object-cover transition-all duration-700 ease-out group-hover:scale-110 group-hover:rotate-1"
             />
           </AspectRatio>
           
@@ -212,16 +251,16 @@ export default function FeaturedCards() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-60 group-hover:opacity-70 transition-opacity" />
         </div>
         
-        <CardHeader className="relative z-10 pb-2">
-          <CardTitle className="text-xl font-bold text-white group-hover:text-primary transition-colors">
+        <CardHeader className="relative z-10 pb-3 px-6 pt-6">
+          <CardTitle className="text-xl font-bold text-white group-hover:text-primary transition-all duration-300 mb-3">
             {card.title}
           </CardTitle>
-          <CardDescription className="text-gray-300 line-clamp-2">
+          <CardDescription className="text-gray-300 line-clamp-2 leading-relaxed">
             {card.description}
           </CardDescription>
         </CardHeader>
         
-        <CardFooter className="pt-0 pb-4">
+        <CardFooter className="pt-2 pb-6 px-6">
           <HoverCard>
             <HoverCardTrigger asChild>
               <Link 
@@ -263,7 +302,7 @@ export default function FeaturedCards() {
     ));
   };
 
-  // If no categories are available, show nothing
+
   if (featuredCards.categories.length === 0 && 
      !featuredCards.newItems.length && 
      !featuredCards.bestSelling.length && 
@@ -285,15 +324,17 @@ export default function FeaturedCards() {
             {t('featured_cards.subtitle', 'Discover what makes our server special')}
           </p>
         </div>
-        
-        <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs defaultValue={activeTab} value={activeTab} onValueChange={(value) => {
+          setActiveTab(value);
+          setLastInteraction(Date.now()); // Reset timer when user manually changes tab
+        }} className="w-full">
           <div className="flex justify-center mb-10 overflow-x-auto pb-2">
-            <TabsList className="bg-background/30 backdrop-blur-sm border border-gray-800/50 p-1 rounded-full">
+            <TabsList className="flex space-x-2 bg-transparent p-0">
               {featuredCards.categories.map((category) => (
                 <TabsTrigger 
                   key={category.id}
                   value={category.id}
-                  className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white px-6 py-2 whitespace-nowrap"
+                  className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white px-6 py-2 whitespace-nowrap transition-all duration-300 ease-in-out bg-background/30 backdrop-blur-sm border border-gray-800/50"
                 >
                   {locale === 'ar' ? category.name.ar : category.name.en}
                 </TabsTrigger>
@@ -303,12 +344,13 @@ export default function FeaturedCards() {
           
           {featuredCards.categories.map((category) => (
             <TabsContent key={category.id} value={category.id} className="mt-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 lg:gap-16 px-4 md:px-8">
                 {renderCards(category.cards, category.id, category.badgeType)}
               </div>
             </TabsContent>
           ))}
         </Tabs>
+
       </div>
     </section>
   );

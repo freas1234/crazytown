@@ -1,8 +1,8 @@
 {
   "common": {
-    "crazytown": "Wexon Store",
-    "site_name_first": "Wexon",
-    "site_name_second": "Store",
+    "crazytown": "𝐅𝐚𝐬𝐭 | 𝐒𝐭𝐨𝐫𝐞",
+    "site_name_first": "𝐅𝐚𝐬𝐭",
+    "site_name_second": "| 𝐒𝐭𝐨𝐫𝐞",
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
@@ -17,7 +17,7 @@
     "learn_more": "Learn More"
   },
   "hero": {
-    "title": "Welcome to Wexon Store",
+    "title": "Welcome to 𝐅𝐚𝐬𝐭 | 𝐒𝐭𝐨𝐫𝐞 ",
     "subtitle": "The ultimate gaming experience",
     "cta": "Explore Store",
     "join_now": "// Join Now"

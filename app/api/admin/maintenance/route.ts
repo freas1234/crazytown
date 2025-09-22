@@ -64,14 +64,14 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log("Maintenance POST request body:", body);
     
-    if (body.action === 'enable') {
+    if (body.action === 'enable' || body.enabled === true) {
       console.log("Enabling maintenance mode");
       await enableMaintenanceMode();
       return NextResponse.json({
         maintenanceMode: true,
         success: true
       });
-    } else if (body.action === 'disable') {
+    } else if (body.action === 'disable' || body.enabled === false) {
       console.log("Disabling maintenance mode");
       await disableMaintenanceMode();
       return NextResponse.json({

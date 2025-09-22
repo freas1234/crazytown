@@ -17,7 +17,6 @@ try {
   environment = config.environment || 'production';
   isProduction = environment.toLowerCase() === 'production';
   
-  console.log(`PayPal configuration loaded. Environment: ${environment}`);
 } catch (error) {
   console.error('Error loading PayPal configuration:', error);
 
@@ -26,7 +25,6 @@ try {
   environment = process.env.PAYPAL_ENVIRONMENT || 'production';
   isProduction = environment.toLowerCase() === 'production';
   
-  console.log('Using PayPal configuration from environment variables');
 }
 
 export interface CreateOrderRequestBody {
@@ -83,8 +81,6 @@ async function getAccessToken() {
       ? 'https://api-m.paypal.com/v1/oauth2/token'
       : 'https://api-m.sandbox.paypal.com/v1/oauth2/token';
 
-    console.log(`Attempting to get PayPal access token from ${isProduction ? 'production' : 'sandbox'} environment`);
-    console.log(`Using client ID: ${clientId.substring(0, 5)}...${clientId.substring(clientId.length - 5)}`);
     
     const response = await fetch(url, {
       method: 'POST',
@@ -102,7 +98,6 @@ async function getAccessToken() {
     }
 
     const data = await response.json();
-    console.log('Successfully obtained PayPal access token');
     return data.access_token;
   } catch (error) {
     console.error('Error getting PayPal access token:', error);
@@ -117,7 +112,6 @@ export async function createOrder(orderData: CreateOrderRequestBody) {
       ? 'https://api-m.paypal.com/v2/checkout/orders'
       : 'https://api-m.sandbox.paypal.com/v2/checkout/orders';
 
-    console.log('Creating PayPal order with data:', JSON.stringify({
       intent: 'CAPTURE',
       purchase_units: orderData.purchase_units.map(unit => ({
         ...unit,
@@ -144,7 +138,6 @@ export async function createOrder(orderData: CreateOrderRequestBody) {
     }
 
     const data = await response.json();
-    console.log('Successfully created PayPal order:', data.id);
     return {
       success: true,
       orderID: data.id,
@@ -167,7 +160,6 @@ export async function captureOrder(orderID: string) {
       ? `https://api-m.paypal.com/v2/checkout/orders/${orderID}/capture`
       : `https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderID}/capture`;
 
-    console.log(`Attempting to capture PayPal order: ${orderID}`);
     
     const response = await fetch(url, {
       method: 'POST',
@@ -184,7 +176,6 @@ export async function captureOrder(orderID: string) {
     }
 
     const data = await response.json();
-    console.log('Successfully captured PayPal order:', data.id);
     return {
       success: true,
       orderID: data.id,

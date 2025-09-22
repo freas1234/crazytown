@@ -19,6 +19,9 @@ interface Order {
     quantity: number;
   }[];
   total: number;
+  subtotal?: number;
+  couponCode?: string;
+  couponDiscount?: number;
   status: 'pending' | 'paid' | 'completed' | 'cancelled';
   paymentMethod: 'paypal' | 'card';
   paymentId?: string;
@@ -159,9 +162,23 @@ export default function Confirmation({ params }: { params: Promise<{ id: string 
                             </div>
                           ))}
                           
-                          <div className="pt-4 border-t border-gray-800 flex justify-between font-bold">
-                            <span className="text-white">{t('store.cart.total', 'Total')}</span>
-                            <span className="text-primary">${order.total.toFixed(2)}</span>
+                          <div className="pt-4 border-t border-gray-800 space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-gray-400">{t('store.cart.subtotal', 'Subtotal')}</span>
+                              <span className="text-white">${(order.subtotal || order.total).toFixed(2)}</span>
+                            </div>
+                            
+                            {order.couponCode && order.couponDiscount && (
+                              <div className="flex justify-between">
+                                <span className="text-green-400">Coupon ({order.couponCode})</span>
+                                <span className="text-green-400">-${order.couponDiscount.toFixed(2)}</span>
+                              </div>
+                            )}
+                            
+                            <div className="flex justify-between font-bold pt-2 border-t border-gray-700">
+                              <span className="text-white">{t('store.cart.total', 'Total')}</span>
+                              <span className="text-primary">${order.total.toFixed(2)}</span>
+                            </div>
                           </div>
                         </div>
                       </div>

@@ -65,16 +65,6 @@ export default function ContentPage() {
   
   const [adminContent, setAdminContent] = useState<any>({
     pages: {
-      hero: {
-        title: "Hero Section",
-        description: "Manage the homepage hero section content",
-        actionButton: "Manage Hero Content"
-      },
-      featuredCards: {
-        title: "Featured Cards",
-        description: "Manage the featured cards on the homepage",
-        actionButton: "Manage Featured Cards"
-      },
       about: {
         title: "About Page",
         description: "Manage the About page content",
@@ -153,100 +143,7 @@ export default function ContentPage() {
     fetchAdminContent();
   }, [locale]);
   
-  const saveMetadata = async () => {
-    setSaving(true);
-    setError(null);
-    setSuccess(null);
-    
-    try {
-      const response = await fetch('/api/admin/content/metadata', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ data: metadata }),
-      });
-      
-      if (response.ok) {
-        setSuccess(t('metadata_updated_successfully', 'Website metadata updated successfully'));
-      } else {
-        const data = await response.json();
-        setError(data.message || t('failed_to_update_metadata', 'Failed to update metadata'));
-      }
-    } catch (err) {
-      console.error('Error saving metadata:', err);
-      setError(t('unexpected_error', 'An unexpected error occurred'));
-    } finally {
-      setSaving(false);
-    }
-  };
-  
-  const saveHero = async () => {
-    setSaving(true);
-    setError(null);
-    setSuccess(null);
-    
-    try {
-      const response = await fetch('/api/admin/content/hero', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ data: hero }),
-      });
-      
-      if (response.ok) {
-        setSuccess(t('hero_content_updated_successfully', 'Hero content updated successfully'));
-      } else {
-        const data = await response.json();
-        setError(data.message || t('failed_to_update_hero_content', 'Failed to update hero content'));
-      }
-    } catch (err) {
-      console.error('Error saving hero content:', err);
-      setError(t('unexpected_error', 'An unexpected error occurred'));
-    } finally {
-      setSaving(false);
-    }
-  };
-  
-  const saveFeaturedCards = async () => {
-    setSaving(true);
-    setError(null);
-    setSuccess(null);
-    
-    try {
-      const response = await fetch('/api/admin/content/featuredCards', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ data: featuredCards }),
-      });
-      
-      if (response.ok) {
-        setSuccess(t('featured_cards_updated_successfully', 'Featured cards content updated successfully'));
-      } else {
-        const data = await response.json();
-        setError(data.message || t('failed_to_update_featured_cards', 'Failed to update featured cards content'));
-      }
-    } catch (err) {
-      console.error('Error saving featured cards content:', err);
-      setError(t('unexpected_error', 'An unexpected error occurred'));
-    } finally {
-      setSaving(false);
-    }
-  };
-  
-  const updateFeaturedCard = (lang: 'en' | 'ar', index: number, field: string, value: string) => {
-    setFeaturedCards(prev => {
-      const newCards = { ...prev };
-      newCards[lang].cards[index] = {
-        ...newCards[lang].cards[index],
-        [field]: value
-      };
-      return newCards;
-    });
-  };
+
   
   if (isLoading) {
     return (
@@ -282,39 +179,7 @@ export default function ContentPage() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
-        <Card className="game-card border-gray-800 bg-secondary/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-white">{pages?.hero?.title || t('hero_section', 'Hero Section')}</CardTitle>
-            <CardDescription className="text-gray-400">{pages?.hero?.description || t('manage_homepage_hero', 'Manage the homepage hero section content')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-300 mb-4">
-              {t('hero_description', 'Edit the main hero section that appears on the homepage, including heading, subheading, and call-to-action buttons.')}
-            </p>
-          </CardContent>
-          <CardFooter>
-            <Button asChild className="w-full bg-primary hover:bg-primary/80">
-              <Link href="/admin/content/hero">{pages?.hero?.actionButton || t('manage_hero_content', 'Manage Hero Content')}</Link>
-            </Button>
-          </CardFooter>
-        </Card>
         
-        <Card className="game-card border-gray-800 bg-secondary/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-white">{pages?.featuredCards?.title || t('featured_cards', 'Featured Cards')}</CardTitle>
-            <CardDescription className="text-gray-400">{pages?.featuredCards?.description || t('manage_featured_cards_homepage', 'Manage the featured cards on the homepage')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-300 mb-4">
-              {t('featured_cards_description', 'Edit the featured cards section that appears on the homepage, including images, titles, and descriptions.')}
-            </p>
-          </CardContent>
-          <CardFooter>
-            <Button asChild className="w-full bg-primary hover:bg-primary/80">
-              <Link href="/admin/content/featuredCards">{pages?.featuredCards?.actionButton || t('manage_featured_cards', 'Manage Featured Cards')}</Link>
-            </Button>
-          </CardFooter>
-        </Card>
         
         <Card className="game-card border-gray-800 bg-secondary/80 backdrop-blur-sm">
           <CardHeader>

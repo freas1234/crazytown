@@ -109,7 +109,7 @@ export default function EditCategory({ params }: { params: Promise<{ id: string 
       }
       
       toast.success('Category updated successfully');
-      router.push('/admin/store?tab=categories');
+      router.push('/admin/store/categories');
     } catch (error) {
       console.error('Error updating category:', error);
       toast.error('Failed to update category');
@@ -134,7 +134,7 @@ export default function EditCategory({ params }: { params: Promise<{ id: string 
       }
       
       toast.success('Category deleted successfully');
-      router.push('/admin/store?tab=categories');
+      router.push('/admin/store/categories');
     } catch (error) {
       console.error('Error deleting category:', error);
       toast.error('Failed to delete category');

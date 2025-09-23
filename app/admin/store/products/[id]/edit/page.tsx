@@ -219,7 +219,7 @@ export default function EditProduct({ params }: { params: Promise<{ id: string }
       }
       
       toast.success('Product updated successfully');
-      router.push('/admin/store');
+      router.push('/admin/store/products');
     } catch (error) {
       console.error('Error updating product:', error);
       toast.error('Failed to update product');
@@ -244,7 +244,7 @@ export default function EditProduct({ params }: { params: Promise<{ id: string }
       }
       
       toast.success('Product deleted successfully');
-      router.push('/admin/store');
+      router.push('/admin/store/products');
     } catch (error) {
       console.error('Error deleting product:', error);
       toast.error('Failed to delete product');

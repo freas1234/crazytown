@@ -34,7 +34,7 @@ export default function AdminSettings() {
     discordInviteUrl: 'https://discord.gg/crazytown',
     enableRegistration: true,
     enableStore: true,
-    enableJobs: true,
+    enableJobs: false,
     maintenanceMode: false,
     maintenanceContent: {
       en: {
@@ -47,7 +47,6 @@ export default function AdminSettings() {
       }
     }
   });
-  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,26 +59,53 @@ export default function AdminSettings() {
   const fetchSettings = async () => {
     try {
       setLoading(true);
+      const response = await fetch('/api/admin/settings');
       
-      const maintenanceResponse = await fetch('/api/admin/maintenance');
-      if (maintenanceResponse.ok) {
-        const maintenanceData = await maintenanceResponse.json();
-        if (maintenanceData.success) {
-          setSettings(prev => ({
-            ...prev,
-            maintenanceMode: maintenanceData.maintenanceMode,
-            maintenanceContent: maintenanceData.content || prev.maintenanceContent
-          }));
-        }
+      if (!response.ok) {
+        throw new Error('Failed to fetch settings');
       }
       
-      setTimeout(() => {
-        setLoading(false);
-      }, 500);
+      const data = await response.json();
+      if (data.success && data.settings) {
+        setSettings(data.settings);
+      }
     } catch (error) {
       console.error('Error fetching settings:', error);
       setError('Failed to load settings');
+    } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccess(null);
+      
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settings),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save settings');
+      }
+      
+      const data = await response.json();
+      if (data.success) {
+        setSuccess('Settings saved successfully');
+      } else {
+        throw new Error(data.error || 'Failed to save settings');
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      setError('Failed to save settings');
+    } finally {
+      setSaving(false);
     }
   };
 

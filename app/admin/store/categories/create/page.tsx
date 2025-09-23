@@ -48,7 +48,7 @@ export default function CreateCategory() {
       }
       
       toast.success('Category created successfully');
-      router.push('/admin/store?tab=categories');
+      router.push('/admin/store/categories');
     } catch (error) {
       console.error('Error creating category:', error);
       toast.error('Failed to create category');

@@ -145,7 +145,7 @@ export default function CreateProduct() {
       }
       
       toast.success('Product created successfully');
-      router.push('/admin/store');
+      router.push('/admin/store/products');
     } catch (error) {
       console.error('Error creating product:', error);
       toast.error('Failed to create product');

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../../../lib/auth-config';
-import { getProductCategories, updateProductCategory, deleteProductCategory } from '../../../../../models/Product';
+import { getProductCategories, updateProductCategory, deleteProductCategory, ProductCategory } from '../../../../../models/Product';
 
 export async function GET(
   request: NextRequest,
@@ -19,7 +19,7 @@ export async function GET(
     
     const { id } = await params;
     const categories = await getProductCategories();
-    const category = categories.find(cat => cat.id === id);
+    const category = categories.find((cat: ProductCategory) => cat.id === id);
     
     if (!category) {
       return NextResponse.json(

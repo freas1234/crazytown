@@ -1,8 +1,8 @@
 {
   "common": {
-    "crazytown": "𝐅𝐚𝐬𝐭 | 𝐒𝐭𝐨𝐫𝐞",
-    "site_name_first": "𝐅𝐚𝐬𝐭",
-    "site_name_second": "| 𝐒𝐭𝐨𝐫𝐞",
+    "crazytown": "Wexon Store",
+    "site_name_first": "Wexon",
+    "site_name_second": "Store",
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
@@ -17,7 +17,7 @@
     "learn_more": "Learn More"
   },
   "hero": {
-    "title": "Welcome to 𝐅𝐚𝐬𝐭 | 𝐒𝐭𝐨𝐫𝐞 ",
+    "title": "Welcome to Wexon Store",
     "subtitle": "The ultimate gaming experience",
     "cta": "Explore Store",
     "join_now": "// Join Now"
@@ -92,7 +92,12 @@
     "passwords_mismatch": "Passwords do not match",
     "email_exists": "Email already in use",
     "username_exists": "Username already in use",
-    "password_min_length": "Password must be at least 6 characters"
+    "password_min_length": "Password must be at least 10 characters",
+    "password_requirements": "Password must contain at least 10 characters with uppercase, lowercase, numbers, and symbols",
+    "password_similar_email": "Password cannot be similar to your email",
+    "password_common_patterns": "Password cannot contain common patterns",
+    "password_repeated_chars": "Password cannot contain more than 2 consecutive identical characters",
+    "email_already_exists": "An account with this email already exists"
   },
   "profile": {
     "title": "Profile",

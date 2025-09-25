@@ -12,8 +12,8 @@ export async function GET() {
         content: {
           type: 'metadata',
           data: {
-            title: '𝐅𝐚𝐬𝐭 | 𝐒𝐭𝐨𝐫𝐞',
-            description: 'Official store for Fast server',
+            title: 'Wexon store',
+            description: 'Official Wexon store',
             keywords: '',
             ogTitle: '',
             ogDescription: '',

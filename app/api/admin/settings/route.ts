@@ -16,6 +16,7 @@ export async function GET() {
     
     const settings = await db.content.findByType('siteSettings');
     
+    
     return NextResponse.json({
       success: true,
       settings: settings?.data || {

@@ -18,14 +18,15 @@ import {
   FileCode,
   Globe,
   Wrench,
-  LogOut, 
-  Menu, 
+  LogOut,
+  Menu,
   X,
   Package,
   ShoppingBag,
   BookOpen,
   Star,
-  Shield
+  Shield,
+  Lock
 } from 'lucide-react';
 import { useTranslation } from '../../lib/hooks/useTranslation';
 import { useAuth } from '../../lib/AuthContext';
@@ -72,6 +73,11 @@ export default function AdminSidebar() {
       name: 'Maintenance',
       href: '/admin/content/maintenance',
       icon: <Shield className="h-5 w-5" />,
+    },
+    {
+      name: 'Security',
+      href: '/admin/security',
+      icon: <Lock className="h-5 w-5" />,
     },
     {
       name: 'Orders',

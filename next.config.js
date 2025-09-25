@@ -49,6 +49,8 @@ const nextConfig = {
     PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
     PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET,
     NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID || 'AbvRmBN5wvyJV6ojQ-m9fjdgP0akhmUJZ2FGzP1z9uDH6tHiZ4ZeoN9yNvgG3fKIQyvTaC7f0Vg5ELVx',
+    NEXT_PUBLIC_RECAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
+    RECAPTCHA_SECRET_KEY: process.env.RECAPTCHA_SECRET_KEY,
   },
   
   webpack: (config, { isServer }) => {

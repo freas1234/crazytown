@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Header from '../../components/Header';
@@ -17,6 +17,7 @@ import { Separator } from '../../components/ui/separator';
 import { Badge } from '../../components/ui/badge';
 import { useTranslation } from '../../lib/hooks/useTranslation';
 import { usePageContent } from '../../lib/usePageContent';
+import { useSiteSettings } from '../../lib/hooks/useSiteSettings';
 
 interface SocialLink {
   name: string;
@@ -32,11 +33,26 @@ interface FAQ {
 export default function ContactPage() {
   const { locale, isRTL } = useTranslation();
   const { content, localizedContent, isLoading, error: contentError } = usePageContent('contact');
+  const { settings } = useSiteSettings();
+  
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [name, setName] = useState('');
+  
+  // Listen for settings updates
+  useEffect(() => {
+    const handleSettingsUpdate = () => {
+      window.location.reload();
+    };
+    
+    window.addEventListener('settingsUpdated', handleSettingsUpdate);
+    
+    return () => {
+      window.removeEventListener('settingsUpdated', handleSettingsUpdate);
+    };
+  }, []);
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [subject, setSubject] = useState('');

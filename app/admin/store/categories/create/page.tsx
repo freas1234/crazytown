@@ -58,12 +58,12 @@ export default function CreateCategory() {
 
   return (
     <RoleGuard allowedRoles={['admin', 'owner']} redirectTo="/login">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-white">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">
             <span className="cyberpunk-border inline-block">Create New Category</span>
           </h1>
-          <Button variant="outline" size="sm" asChild className="gap-1 border-primary/30 hover:bg-primary/20 hover:text-primary">
+          <Button variant="outline" size="sm" asChild className="gap-1 border-primary/30 hover:bg-primary/20 hover:text-primary w-full sm:w-auto">
             <Link href="/admin/store?tab=categories">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -134,18 +134,19 @@ export default function CreateCategory() {
                 <Label htmlFor="active">Active</Label>
               </div>
               
-              <div className="flex justify-end pt-4 space-x-2">
+              <div className="flex flex-col sm:flex-row justify-end pt-4 gap-2">
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={() => router.push('/admin/store?tab=categories')}
                   disabled={saving}
+                  className="w-full sm:w-auto"
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
-                  className="bg-primary hover:bg-primary/80"
+                  className="bg-primary hover:bg-primary/80 w-full sm:w-auto"
                   disabled={saving}
                 >
                   {saving ? 'Creating...' : 'Create Category'}

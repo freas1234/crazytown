@@ -8,6 +8,7 @@ import Footer from '../../components/Footer';
 import { signIn } from 'next-auth/react';
 import { useTranslation } from '../../lib/hooks/useTranslation';
 import { usePageContent } from '../../lib/usePageContent';
+import RecaptchaV2 from '../../components/RecaptchaV2';
 import { useAuth } from '../../lib/AuthContext';
 
 function LoginContent() {
@@ -27,6 +28,8 @@ function LoginContent() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDiscordLoading, setIsDiscordLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState('');
+  const [recaptchaError, setRecaptchaError] = useState('');
 
   // Use localizedContent instead of t
   const t = localizedContent;
@@ -62,25 +65,60 @@ function LoginContent() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleRecaptchaVerify = (token: string) => {
+    setRecaptchaToken(token);
+    setRecaptchaError('');
+  };
+
+  const handleRecaptchaExpire = () => {
+    setRecaptchaToken('');
+    setRecaptchaError('reCAPTCHA expired. Please verify again.');
+  };
+
+  const handleRecaptchaError = () => {
+    setRecaptchaToken('');
+    setRecaptchaError('reCAPTCHA verification failed. Please try again.');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
+    if (!recaptchaToken) {
+      setRecaptchaError('Please complete the reCAPTCHA verification');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    setErrorMessage('');
+    setRecaptchaError('');
+
     try {
-      const result = await signIn('credentials', {
-        redirect: false,
-        email: formData.email,
-        password: formData.password,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          recaptchaToken,
+          redirectTo,
+        }),
       });
 
-      if (result?.ok) {
-        router.push(redirectTo || '/');
+      const result = await response.json();
+
+      if (response.ok) {
+        router.push(result.redirectTo || '/');
       } else {
-        setErrorMessage(t?.errorMessages?.invalidCredentials || 'Login failed. Please check your credentials.');
+        setErrorMessage(result.message || t?.errorMessages?.serverError || 'Login failed. Please try again.');
+        // Reset reCAPTCHA on error
+        setRecaptchaToken('');
       }
     } catch (error) {
       console.error('Login error:', error);
       setErrorMessage(t?.errorMessages?.serverError || 'Server error. Please try again later.');
+      setRecaptchaToken('');
     } finally {
       setIsSubmitting(false);
     }
@@ -148,42 +186,55 @@ function LoginContent() {
             </div>
           )}
           
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">{t?.emailLabel || 'Email'}</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary"
-              />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">{t?.emailLabel || 'Email'}</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">{t?.passwordLabel || 'Password'}</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
             </div>
             
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">{t?.passwordLabel || 'Password'}</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                required
-                value={formData.password}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
+            <RecaptchaV2
+              onVerify={handleRecaptchaVerify}
+              onExpire={handleRecaptchaExpire}
+              onError={handleRecaptchaError}
+              className="my-4"
+            />
             
-            <div className="pt-2">
-              <button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full px-4 py-2 bg-gradient-to-r from-primary to-primary/70 hover:from-primary/90 hover:to-primary/60 text-white font-medium rounded-md shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (locale === 'ar' ? 'جاري تسجيل الدخول...' : 'Logging in...') : (t?.loginButton || 'Login')}
-              </button>
-            </div>
+            {recaptchaError && (
+              <div className="mb-4 p-3 bg-red-900/50 border border-red-500/50 rounded-md text-red-200 text-sm">
+                {recaptchaError}
+              </div>
+            )}
+            
+            <button
+              type="submit"
+              disabled={isSubmitting || !recaptchaToken}
+              className="w-full px-4 py-2 bg-primary hover:bg-primary/80 disabled:bg-gray-600 text-white font-medium rounded-md shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? 'Logging in...' : (t?.loginButton || 'Login')}
+            </button>
           </form>
           
           <div className="my-6 flex items-center justify-center">

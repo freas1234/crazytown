@@ -1,5 +1,7 @@
 import { MongoClient, ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
+import SecurityEvent from '../app/models/SecurityEvent';
+import BlockedIP from '../app/models/BlockedIP';
 
 const isServer = typeof window === 'undefined';
 
@@ -554,6 +556,193 @@ export const db = {
       } catch (error) {
         console.error('Error searching translations:', error);
         return [];
+      }
+    }
+  },
+  
+  // Security functions
+  security: {
+    // Security Events
+    createEvent: async (eventData: {
+      type: string;
+      severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+      ipAddress: string;
+      userAgent?: string;
+      details?: Record<string, any>;
+    }) => {
+      try {
+        const event = new SecurityEvent({
+          ...eventData,
+          timestamp: new Date(),
+          resolved: false
+        });
+        await event.save();
+        return event;
+      } catch (error) {
+        console.error('Error creating security event:', error);
+        throw error;
+      }
+    },
+
+    getEvents: async (limit: number = 50, offset: number = 0) => {
+      try {
+        const events = await SecurityEvent.find({})
+          .sort({ timestamp: -1 })
+          .limit(limit)
+          .skip(offset)
+          .lean();
+        return events;
+      } catch (error) {
+        console.error('Error fetching security events:', error);
+        return [];
+      }
+    },
+
+    getEventsByIP: async (ip: string, limit: number = 50) => {
+      try {
+        const events = await SecurityEvent.find({ ipAddress: ip })
+          .sort({ timestamp: -1 })
+          .limit(limit)
+          .lean();
+        return events;
+      } catch (error) {
+        console.error('Error fetching events by IP:', error);
+        return [];
+      }
+    },
+
+    getEventStats: async () => {
+      try {
+        const totalEvents = await SecurityEvent.countDocuments();
+        
+        const eventsByType = await SecurityEvent.aggregate([
+          { $group: { _id: '$type', count: { $sum: 1 } } }
+        ]);
+        
+        const eventsBySeverity = await SecurityEvent.aggregate([
+          { $group: { _id: '$severity', count: { $sum: 1 } } }
+        ]);
+        
+        const topIPs = await SecurityEvent.aggregate([
+          { $group: { _id: '$ipAddress', count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+          { $limit: 10 }
+        ]);
+
+        return {
+          totalEvents,
+          eventsByType: eventsByType.reduce((acc, item) => {
+            acc[item._id] = item.count;
+            return acc;
+          }, {}),
+          eventsBySeverity: eventsBySeverity.reduce((acc, item) => {
+            acc[item._id] = item.count;
+            return acc;
+          }, {}),
+          topIPs: topIPs.map(item => ({
+            ip: item._id,
+            count: item.count
+          }))
+        };
+      } catch (error) {
+        console.error('Error fetching security stats:', error);
+        return {
+          totalEvents: 0,
+          eventsByType: {},
+          eventsBySeverity: {},
+          topIPs: []
+        };
+      }
+    },
+
+    // Blocked IPs
+    blockIP: async (ip: string, reason: string, blockedBy: string, duration: number = 24 * 60 * 60 * 1000) => {
+      try {
+        // Check if already blocked
+        const existing = await BlockedIP.findOne({ ip });
+        if (existing) {
+          throw new Error('IP is already blocked');
+        }
+
+        const blockedIP = new BlockedIP({
+          ip,
+          reason,
+          blockedBy,
+          duration,
+          blockedAt: new Date()
+        });
+
+        await blockedIP.save();
+        return blockedIP;
+      } catch (error) {
+        console.error('Error blocking IP:', error);
+        throw error;
+      }
+    },
+
+    unblockIP: async (ip: string, unblockedBy: string) => {
+      try {
+        const blockedIP = await BlockedIP.findOne({ ip });
+        if (!blockedIP) {
+          throw new Error('IP is not blocked');
+        }
+
+        blockedIP.unblockedAt = new Date();
+        blockedIP.unblockedBy = unblockedBy;
+        await blockedIP.save();
+
+        return blockedIP;
+      } catch (error) {
+        console.error('Error unblocking IP:', error);
+        throw error;
+      }
+    },
+
+    getBlockedIPs: async () => {
+      try {
+        const blockedIPs = await BlockedIP.find({
+          unblockedAt: { $exists: false }
+        }).sort({ blockedAt: -1 }).lean();
+        return blockedIPs;
+      } catch (error) {
+        console.error('Error fetching blocked IPs:', error);
+        return [];
+      }
+    },
+
+    isIPBlocked: async (ip: string) => {
+      try {
+        const blockedIP = await BlockedIP.findOne({
+          ip,
+          unblockedAt: { $exists: false }
+        });
+        return !!blockedIP;
+      } catch (error) {
+        console.error('Error checking if IP is blocked:', error);
+        return false;
+      }
+    },
+
+    deleteExpiredBlocks: async () => {
+      try {
+        const now = new Date();
+        const result = await BlockedIP.deleteMany({
+          $or: [
+            { unblockedAt: { $exists: true } },
+            {
+              $expr: {
+                $lt: [
+                  { $add: ['$blockedAt', '$duration'] },
+                  now
+                ]
+              }
+            }
+          ]
+        });
+        return result.deletedCount;
+      } catch (error) {
+        console.error('Error deleting expired blocks:', error);
+        return 0;
       }
     }
   }

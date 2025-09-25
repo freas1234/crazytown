@@ -210,12 +210,12 @@ export default function CreateRule() {
 
   return (
     <RoleGuard allowedRoles={['admin', 'owner']} redirectTo="/login">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-white">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">
             <span className="cyberpunk-border inline-block">Create New Rule</span>
           </h1>
-          <Button variant="outline" size="sm" asChild className="gap-1 border-primary/30 hover:bg-primary/20 hover:text-primary">
+          <Button variant="outline" size="sm" asChild className="gap-1 border-primary/30 hover:bg-primary/20 hover:text-primary w-full sm:w-auto">
             <Link href="/admin/rules">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -241,9 +241,9 @@ export default function CreateRule() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="mb-4 bg-gray-700">
-                    <TabsTrigger value="en">English</TabsTrigger>
-                    <TabsTrigger value="ar">Arabic</TabsTrigger>
+                  <TabsList className="mb-4 bg-gray-700 grid w-full grid-cols-2">
+                    <TabsTrigger value="en" className="text-sm">English</TabsTrigger>
+                    <TabsTrigger value="ar" className="text-sm">Arabic</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="en" className="space-y-4">
@@ -265,12 +265,18 @@ export default function CreateRule() {
                       <Textarea 
                         id="description.en" 
                         name="description.en"
-                        placeholder="Enter rule description in English" 
+                        placeholder="Enter rule description in English (Use Shift + Enter for new lines)" 
                         value={formData.description.en}
                         onChange={handleInputChange}
-                        className="bg-gray-900/50 border-gray-700 min-h-[150px]"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                          }
+                        }}
+                        className="bg-gray-900/50 border-gray-700 min-h-[150px] resize-y"
                         required
                       />
+                      <p className="text-xs text-gray-400">Press Shift + Enter for new lines</p>
                     </div>
                   </TabsContent>
                   
@@ -294,13 +300,19 @@ export default function CreateRule() {
                       <Textarea 
                         id="description.ar" 
                         name="description.ar"
-                        placeholder="Enter rule description in Arabic" 
+                        placeholder="Enter rule description in Arabic (Use Shift + Enter for new lines)" 
                         value={formData.description.ar}
                         onChange={handleInputChange}
-                        className="bg-gray-900/50 border-gray-700 min-h-[150px] text-right"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                          }
+                        }}
+                        className="bg-gray-900/50 border-gray-700 min-h-[150px] text-right resize-y"
                         dir="rtl"
                         required
                       />
+                      <p className="text-xs text-gray-400 text-right">اضغط Shift + Enter للانتقال لسطر جديد</p>
                     </div>
                   </TabsContent>
                 </Tabs>
@@ -363,18 +375,19 @@ export default function CreateRule() {
                   <Label htmlFor="active">Active</Label>
                 </div>
                 
-                <div className="flex justify-end pt-4 space-x-2">
+                <div className="flex flex-col sm:flex-row justify-end pt-4 gap-2">
                   <Button 
                     type="button" 
                     variant="outline" 
                     onClick={() => router.push('/admin/rules')}
                     disabled={saving}
+                    className="w-full sm:w-auto"
                   >
                     Cancel
                   </Button>
                   <Button 
                     type="submit" 
-                    className="bg-primary hover:bg-primary/80"
+                    className="bg-primary hover:bg-primary/80 w-full sm:w-auto"
                     disabled={saving || categories.length === 0}
                   >
                     {saving ? 'Creating...' : 'Create Rule'}
@@ -385,16 +398,16 @@ export default function CreateRule() {
           </CardContent>
         </Card>
 
-        <div className="mt-6 flex justify-end">
+        <div className="mt-4 sm:mt-6 flex justify-center sm:justify-end">
           <button
             type="button"
             onClick={() => setShowTranslationHelper(!showTranslationHelper)}
-            className="px-4 py-2 bg-primary/20 text-primary rounded-md hover:bg-primary/30 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-primary/20 text-primary rounded-md hover:bg-primary/30 transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
             </svg>
-            {showTranslationHelper ? 'Hide Translation Helper' : 'Show Translation Helper'}
+            <span className="text-sm sm:text-base">{showTranslationHelper ? 'Hide Translation Helper' : 'Show Translation Helper'}</span>
           </button>
         </div>
         

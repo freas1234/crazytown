@@ -172,12 +172,12 @@ export default function ContentPage() {
 
   return (
     <RoleGuard allowedRoles={['admin', 'owner']} redirectTo="/login">
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-8">
+      <div className="px-2 sm:px-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8">
           <span className="cyberpunk-border inline-block">{t('content_management', 'Content Management')}</span>
         </h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         
         
         

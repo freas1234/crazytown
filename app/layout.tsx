@@ -4,8 +4,30 @@ import { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
-   
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/content/metadata`, {
+    // For server-side rendering, use absolute URL or fallback to default metadata
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    
+    if (!baseUrl) {
+      // Return default metadata if no base URL is configured
+      return {
+        title: 'Wexon store',
+        description: 'Official Wexon store',
+        keywords: ['store', 'fast', 'server'],
+        themeColor: '#000000',
+        openGraph: {
+          title: 'Wexon store',
+          description: 'Official Wexon store',
+          images: ['/favicon.svg'],
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title: 'Wexon store',
+          description: 'Official Wexon store',
+        },
+      };
+    }
+    
+    const response = await fetch(`${baseUrl}/api/content/metadata`, {
       next: { revalidate: 3600 } 
     });
     
@@ -17,18 +39,18 @@ export async function generateMetadata(): Promise<Metadata> {
     const metadata = data.content?.data || {};
     
     return {
-      title: metadata.title || '𝐅𝐚𝐬𝐭 | 𝐒𝐭𝐨𝐫𝐞',
+      metadataBase: new URL(baseUrl),
+      title: metadata.title || 'Wexon store',
       description: metadata.description || 'Official store for Fast server',
       keywords: metadata.keywords?.split(',').map((keyword: string) => keyword.trim()) || [],
-      themeColor: metadata.themeColor || '#000000',
       openGraph: {
-        title: metadata.ogTitle || metadata.title || '𝐅𝐚𝐬𝐭 | 𝐒𝐭𝐨𝐫𝐞',
+        title: metadata.ogTitle || metadata.title || 'Wexon store',
         description: metadata.ogDescription || metadata.description || 'Official store for Fast server',
         images: metadata.ogImage ? [metadata.ogImage] : ['/favicon.svg'],
       },
       twitter: {
         card: 'summary_large_image',
-        title: metadata.ogTitle || metadata.title || '𝐅𝐚𝐬𝐭 | 𝐒𝐭𝐨𝐫𝐞',
+        title: metadata.ogTitle || metadata.title || 'Wexon store',
         description: metadata.ogDescription || metadata.description || 'Official store for Fast server',
         images: metadata.ogImage ? [metadata.ogImage] : ['/favicon.svg'],
         creator: metadata.twitterHandle || '',
@@ -41,7 +63,8 @@ export async function generateMetadata(): Promise<Metadata> {
     console.error('Error fetching metadata:', error);
     // Fallback metadata
     return {
-      title: '𝐅𝐚𝐬𝐭 | 𝐒𝐭𝐨𝐫𝐞',
+      metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+      title: 'Wexon store',
       description: 'Official store for Fast server',
       icons: {
         icon: '/favicon.svg',

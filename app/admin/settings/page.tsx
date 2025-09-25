@@ -98,6 +98,12 @@ export default function AdminSettings() {
       const data = await response.json();
       if (data.success) {
         setSuccess('Settings saved successfully');
+        // Dispatch event to update all pages
+        window.dispatchEvent(new CustomEvent('settingsUpdated'));
+        // Refresh the page to show updated settings
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       } else {
         throw new Error(data.error || 'Failed to save settings');
       }

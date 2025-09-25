@@ -7,6 +7,7 @@ import { Card } from '../../components/ui/card';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from '../../lib/hooks/useTranslation';
+import { useSiteSettings } from '../../lib/hooks/useSiteSettings';
 
 interface FeatureItem {
   id?: string;
@@ -117,8 +118,23 @@ const defaultContent: AboutContent = {
 
 export default function AboutPage() {
   const { locale, setLocale, isRTL } = useTranslation();
+  const { settings } = useSiteSettings();
+  
   const [content, setContent] = useState<AboutContent>(defaultContent);
   const [loading, setLoading] = useState(true);
+  
+  // Listen for settings updates
+  useEffect(() => {
+    const handleSettingsUpdate = () => {
+      window.location.reload();
+    };
+    
+    window.addEventListener('settingsUpdated', handleSettingsUpdate);
+    
+    return () => {
+      window.removeEventListener('settingsUpdated', handleSettingsUpdate);
+    };
+  }, []);
   
   useEffect(() => {
     fetchContent();
@@ -278,8 +294,9 @@ export default function AboutPage() {
                 : "انضم إلى مجتمع Discord للتواصل مع اللاعبين الآخرين، والبقاء على اطلاع بأخبار السيرفر، والمشاركة في الفعاليات."}
             </p>
             <Link 
-              href="https://discord.gg/your-invite" 
+              href={settings?.discordInviteUrl || 'https://discord.gg/crazytown'} 
               target="_blank"
+              rel="noopener noreferrer"
               className="inline-block px-6 py-3 bg-gradient-to-r from-primary to-primary/70 hover:from-primary/90 hover:to-primary/60 text-white font-medium rounded-lg shadow-lg transition-all"
             >
               <span className="text-lg">Discord</span>

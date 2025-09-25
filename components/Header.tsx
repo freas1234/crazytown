@@ -98,11 +98,11 @@ export default function Header() {
               <div className="relative flex items-center">
                 <span className="text-primary font-display text-2xl font-bold animate-text-flicker">
                   <span className="text-primary">
-                    {t('common.site_name_first', locale === 'en' ? 'CRAZY' : 'كريزي')}
+                    {t('common.site_name_first', locale === 'en' ? 'WEXON' : 'ويكسون')}
                   </span>
                 </span>
                 <span className="text-white font-display text-2xl font-bold">
-                  &nbsp;{t('common.site_name_second', locale === 'en' ? 'TOWN' : 'تاون')}
+                  &nbsp;{t('common.site_name_second', locale === 'en' ? 'STORE' : 'متجر')}
                 </span>
               </div>
             </Link>
@@ -249,8 +249,9 @@ export default function Header() {
             )}
             
             <button 
-              className="md:hidden text-white hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10"
+              className="md:hidden text-white hover:text-primary transition-colors p-2 rounded-lg hover:bg-primary/10 relative z-10"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle mobile menu"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
@@ -260,7 +261,7 @@ export default function Header() {
         </div>
       </div>
       
-      <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'} mt-4 py-4 bg-secondary/90 backdrop-blur-sm rounded-lg border border-gray-800`}>
+      <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'} absolute top-full left-4 right-4 mt-2 py-4 bg-secondary/95 backdrop-blur-sm rounded-lg border border-gray-800 shadow-xl`}>
         <nav className="flex flex-col space-y-2">
           {navItems.map((item, index) => {
             const isActive = currentPath === item.href;
@@ -287,6 +288,17 @@ export default function Header() {
             >
               <User className={`h-4 w-4 ${isRTL ? 'ml-3' : 'mr-3'}`} />
               {t('login', 'Login')}
+            </Link>
+          )}
+          
+          {!currentUser && (
+            <Link 
+              href="/register" 
+              className={`flex items-center px-4 py-2 text-primary hover:bg-primary/10 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <User className={`h-4 w-4 ${isRTL ? 'ml-3' : 'mr-3'}`} />
+              {t('register', 'Register')}
             </Link>
           )}
         </nav>

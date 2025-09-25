@@ -1,37 +1,107 @@
 import { NextResponse } from 'next/server';
 import { hashPassword } from '../../../../lib/auth-utils';
 import { db } from '../../../../lib/db';
+import { createProtectedAPI, securityManager } from '../../../../lib/advanced-security';
+import { validateFields, VALIDATION_RULES, sanitizeInput } from '../../../../lib/validation';
+import { logSecurityEvent } from '../../../../lib/security-monitor';
+import { verifyRecaptchaToken } from '../../../../lib/google-recaptcha';
 
-export async function POST(request: Request) {
+const registerHandler = async (request: Request, context: any) => {
   try {
     const body = await request.json();
-    const { email, username, password, confirmPassword } = body;
+    const { 
+      email, 
+      username, 
+      password, 
+      confirmPassword, 
+    recaptchaToken,
+      formStartTime,
+      ...honeypotFields 
+    } = body;
 
-    // Basic validation
-    if (!email || !username || !password) {
+    // Verify reCAPTCHA
+    if (recaptchaToken) {
+      const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, context.clientIP, 'form_submit', 0.5);
+      if (!recaptchaResult.success) {
+        logSecurityEvent(
+          'CAPTCHA_FAILED',
+          'MEDIUM',
+          context.clientIP,
+          { type: 'recaptcha', errors: recaptchaResult.errors, score: recaptchaResult.score }
+        );
+        return NextResponse.json(
+          { success: false, message: 'reCAPTCHA verification failed' },
+          { status: 400 }
+        );
+      }
+    } else {
       return NextResponse.json(
-        { success: false, message: 'All fields are required' },
+        { success: false, message: 'reCAPTCHA verification required' },
         { status: 400 }
       );
     }
 
-    if (password !== confirmPassword) {
+    // Verify honeypot fields (should be empty)
+    for (const [fieldName, fieldValue] of Object.entries(honeypotFields)) {
+      if (fieldName.startsWith('hp_') && fieldValue && fieldValue.toString().trim() !== '') {
+        logSecurityEvent(
+          'HONEYPOT_TRIGGERED',
+          'HIGH',
+          context.clientIP,
+          { fieldName, fieldValue: fieldValue.toString().substring(0, 50) }
+        );
+        return NextResponse.json(
+          { success: false, message: 'Invalid form submission' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Verify form timing (should take at least 2 seconds)
+    if (!formStartTime || (Date.now() - formStartTime) < 2000) {
+      logSecurityEvent(
+        'TIMING_ATTACK',
+        'MEDIUM',
+        context.clientIP,
+        { formStartTime, elapsed: Date.now() - formStartTime }
+      );
+      return NextResponse.json(
+        { success: false, message: 'Form submitted too quickly' },
+        { status: 400 }
+      );
+    }
+
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedUsername = sanitizeInput(username);
+    const sanitizedPassword = sanitizeInput(password);
+    const sanitizedConfirmPassword = sanitizeInput(confirmPassword);
+
+    // Validate all fields
+    const validation = validateFields({
+      email: { value: sanitizedEmail, rules: VALIDATION_RULES.email },
+      username: { value: sanitizedUsername, rules: VALIDATION_RULES.username },
+      password: { value: sanitizedPassword, rules: VALIDATION_RULES.password }
+    }, { email: sanitizedEmail });
+
+    if (!validation.isValid) {
+      return NextResponse.json(
+        { success: false, message: validation.errors[0] },
+        { status: 400 }
+      );
+    }
+
+    // Additional validation
+    if (sanitizedPassword !== sanitizedConfirmPassword) {
       return NextResponse.json(
         { success: false, message: 'Passwords do not match' },
-        { status: 400 }
-      );
-    }
-    
-    if (password.length < 6) {
-      return NextResponse.json(
-        { success: false, message: 'Password must be at least 6 characters' },
         { status: 400 }
       );
     }
 
     // Check if email already exists
     const existingUserByEmail = await db.user.findUnique({
-      where: { email }
+      where: { email: sanitizedEmail }
     });
 
     if (existingUserByEmail) {
@@ -43,7 +113,7 @@ export async function POST(request: Request) {
 
     // Check if username already exists
     const existingUserByUsername = await db.user.findUnique({
-      where: { username }
+      where: { username: sanitizedUsername }
     });
 
     if (existingUserByUsername) {
@@ -52,19 +122,29 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
-    
+
     // Hash password
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await hashPassword(sanitizedPassword);
     
     // Create user
     await db.user.create({
       data: {
-      email,
-      username,
-      password: hashedPassword,
+        email: sanitizedEmail,
+        username: sanitizedUsername,
+        password: hashedPassword,
         role: 'user'
       }
     });
+
+    logSecurityEvent(
+      'USER_REGISTERED',
+      'LOW',
+      context.clientIP,
+      { 
+        email: sanitizedEmail.substring(0, 10) + '...',
+        username: sanitizedUsername 
+      }
+    );
 
     return NextResponse.json(
       { success: true, message: 'User registered successfully' },
@@ -72,9 +152,27 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error('Registration error:', error);
+    
+    logSecurityEvent(
+      'REGISTRATION_ERROR',
+      'HIGH',
+      context.clientIP,
+      { error: error instanceof Error ? error.message : 'Unknown error' }
+    );
+    
     return NextResponse.json(
-      { success: false, message: 'An error occurred during registration' },
+      { success: false, message: 'Registration failed. Please try again later.' },
       { status: 500 }
     );
   }
-} 
+};
+
+// Export the protected API handler
+export const POST = createProtectedAPI(registerHandler, {
+  requireCaptcha: true,
+  requireHoneypot: true,
+  requireTiming: true,
+  maxBodySize: 1024 * 1024,
+  rateLimitType: 'REGISTRATION',
+  allowedMethods: ['POST']
+}); 

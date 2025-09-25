@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTranslation } from '../../lib/hooks/useTranslation';
+import { useSiteSettings } from '../../lib/hooks/useSiteSettings';
 
 interface Product {
   id: string;
@@ -46,11 +47,26 @@ interface Category {
 export default function Store() {
   const router = useRouter();
   const { t, locale } = useTranslation();
+  const { settings } = useSiteSettings();
+  
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Listen for settings updates
+  useEffect(() => {
+    const handleSettingsUpdate = () => {
+      window.location.reload();
+    };
+    
+    window.addEventListener('settingsUpdated', handleSettingsUpdate);
+    
+    return () => {
+      window.removeEventListener('settingsUpdated', handleSettingsUpdate);
+    };
+  }, []);
   const [cart, setCart] = useState<{productId: string, quantity: number}[]>([]);
 
   useEffect(() => {
@@ -303,7 +319,12 @@ export default function Store() {
               <p className="text-gray-400 mb-8">
                 {t('store.suggest_item_text', 'Have an idea for a cool new item or package? Join our Discord and share your suggestions with us!')}
               </p>
-              <a href="#" className="inline-block px-6 py-3 bg-gradient-to-r from-primary to-primary/70 hover:from-primary/90 hover:to-primary/60 text-white font-medium rounded-lg shadow-lg transition-all">
+              <a 
+                href={settings?.discordInviteUrl || 'https://discord.gg/crazytown'} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-block px-6 py-3 bg-gradient-to-r from-primary to-primary/70 hover:from-primary/90 hover:to-primary/60 text-white font-medium rounded-lg shadow-lg transition-all"
+              >
                 {t('store.join_discord', 'Join Our Discord')}
               </a>
             </div>

@@ -63,7 +63,6 @@ export default function RecaptchaV2({
       script.async = true;
       script.defer = true;
       script.onload = () => {
-        console.log('reCAPTCHA script loaded successfully');
         setIsLoaded(true);
       };
       script.onerror = () => {
@@ -106,23 +105,18 @@ export default function RecaptchaV2({
     if (!isReady || !containerRef.current || widgetId !== null) return;
 
     try {
-      console.log('Rendering reCAPTCHA with site key:', getRecaptchaSiteKey());
       const id = window.grecaptcha.render(containerRef.current, {
         sitekey: getRecaptchaSiteKey(),
         callback: (token: string) => {
-          console.log('reCAPTCHA verified successfully');
           onVerify(token);
         },
         'expired-callback': () => {
-          console.log('reCAPTCHA expired');
           onExpire?.();
         },
         'error-callback': () => {
-          console.error('reCAPTCHA error');
           onError?.();
         }
       });
-      console.log('reCAPTCHA rendered with ID:', id);
       setWidgetId(id);
     } catch (error) {
       console.error('reCAPTCHA render error:', error);

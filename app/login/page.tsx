@@ -93,28 +93,37 @@ function LoginContent() {
     setRecaptchaError('');
 
     try {
-      const response = await fetch('/api/auth/login', {
+      // First verify reCAPTCHA
+      const verifyResponse = await fetch('/api/auth/verify-captcha', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
           recaptchaToken,
-          formStartTime: Date.now(),
-          redirectTo,
         }),
       });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        router.push(result.redirectTo || '/');
-      } else {
-        setErrorMessage(result.message || t?.errorMessages?.serverError || 'Login failed. Please try again.');
-        // Reset reCAPTCHA on error
+      if (!verifyResponse.ok) {
+        setErrorMessage('reCAPTCHA verification failed');
         setRecaptchaToken('');
+        return;
+      }
+
+      // Then use NextAuth signIn
+      const result = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setErrorMessage(t?.errorMessages?.serverError || 'Login failed. Please check your credentials.');
+        setRecaptchaToken('');
+      } else {
+        // Redirect after successful login
+        router.push(redirectTo || '/');
+        router.refresh();
       }
     } catch (error) {
       console.error('Login error:', error);

@@ -7,20 +7,9 @@ import { verifyToken } from "../../../../lib/auth-utils";
 
 export async function GET() {
   try {
-    console.log("ME endpoint called");
-    
-  
     const session = await getServerSession(authOptions);
-    console.log("Session from NextAuth:", session?.user?.email);
     
     if (session?.user) {
-      console.log("User from session:", {
-        id: session.user.id,
-        email: session.user.email,
-        username: session.user.username,
-        name: session.user.name,
-        role: session.user.role
-      });
       
       try {
         let dbUser = null;
@@ -32,21 +21,18 @@ export async function GET() {
         }
         
         if (!dbUser && session.user.email) {
-          console.log("User not found by ID, trying email:", session.user.email);
           dbUser = await db.user.findUnique({
             where: { email: session.user.email }
           });
         }
         
         if (!dbUser && session.user.discordId) {
-          console.log("User not found by email, trying discordId:", session.user.discordId);
           dbUser = await db.user.findUnique({
             where: { discordId: session.user.discordId }
           });
         }
 
         if (dbUser) {
-          console.log("User found in database:", dbUser.id, "with role:", dbUser.role);
           return NextResponse.json({ 
             user: {
               id: dbUser.id,

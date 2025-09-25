@@ -34,11 +34,18 @@ export const authOptions: NextAuthOptions = {
             where: { email: credentials.email }
           });
 
-          if (!user || user.password !== credentials.password) {
+          if (!user) {
             return null;
           }
 
+          // Use proper password validation
+          const { validatePassword } = await import('./auth-utils');
+          const isPasswordValid = await validatePassword(credentials.password, user.password);
           
+          if (!isPasswordValid) {
+            return null;
+          }
+
           return {
             id: user.id,
             email: user.email,

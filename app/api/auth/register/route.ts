@@ -10,13 +10,6 @@ const registerHandler = async (request: Request, context: any) => {
   try {
     // Use rawBody from context instead of reading request.json() again
     const body = context.rawBody ? JSON.parse(context.rawBody) : await request.json();
-    console.log('Register API - Received data:', { 
-      email: body.email, 
-      username: body.username, 
-      hasPassword: !!body.password,
-      hasRecaptchaToken: !!body.recaptchaToken,
-      formStartTime: body.formStartTime
-    });
     
     const { 
       email, 
@@ -30,10 +23,8 @@ const registerHandler = async (request: Request, context: any) => {
 
     // Verify reCAPTCHA
     if (recaptchaToken) {
-      console.log('Register API - Verifying reCAPTCHA...');
       try {
         const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, context.clientIP);
-        console.log('Register API - reCAPTCHA result:', recaptchaResult);
         
         if (!recaptchaResult.success) {
           logSecurityEvent(
@@ -55,14 +46,11 @@ const registerHandler = async (request: Request, context: any) => {
         );
       }
     } else {
-      console.log('Register API - No reCAPTCHA token provided');
       return NextResponse.json(
         { success: false, message: 'reCAPTCHA verification required' },
         { status: 400 }
       );
     }
-
-    console.log('Register API - reCAPTCHA verification passed, checking honeypot...');
 
     // Verify honeypot fields (should be empty)
     for (const [fieldName, fieldValue] of Object.entries(honeypotFields)) {
@@ -80,7 +68,6 @@ const registerHandler = async (request: Request, context: any) => {
       }
     }
 
-    console.log('Register API - Honeypot check passed, validating fields...');
 
     // Verify form timing (should take at least 2 seconds)
     if (!formStartTime || (Date.now() - formStartTime) < 2000) {
@@ -96,7 +83,6 @@ const registerHandler = async (request: Request, context: any) => {
       );
     }
 
-    console.log('Register API - Timing check passed, sanitizing inputs...');
 
     // Sanitize inputs
     const sanitizedEmail = sanitizeInput(email);
@@ -112,25 +98,19 @@ const registerHandler = async (request: Request, context: any) => {
     }, { email: sanitizedEmail });
 
     if (!validation.isValid) {
-      console.log('Register API - Validation failed:', validation.errors);
       return NextResponse.json(
         { success: false, message: validation.errors[0] },
         { status: 400 }
       );
     }
 
-    console.log('Register API - Validation passed, checking password match...');
-
     // Additional validation
     if (sanitizedPassword !== sanitizedConfirmPassword) {
-      console.log('Register API - Password mismatch');
       return NextResponse.json(
         { success: false, message: 'Passwords do not match' },
         { status: 400 }
       );
     }
-
-    console.log('Register API - Password match check passed, checking database...');
 
     // Check if email already exists
     const existingUserByEmail = await db.user.findUnique({
@@ -138,7 +118,6 @@ const registerHandler = async (request: Request, context: any) => {
     });
 
     if (existingUserByEmail) {
-      console.log('Register API - Email already exists');
       return NextResponse.json(
         { success: false, message: 'Email already in use' },
         { status: 409 }
@@ -151,21 +130,16 @@ const registerHandler = async (request: Request, context: any) => {
     });
 
     if (existingUserByUsername) {
-      console.log('Register API - Username already exists');
       return NextResponse.json(
         { success: false, message: 'Username already in use' },
         { status: 409 }
       );
     }
 
-    console.log('Register API - Database checks passed, creating user...');
-
     // Hash password
-    console.log('Register API - Hashing password...');
     const hashedPassword = await hashPassword(sanitizedPassword);
     
     // Create user
-    console.log('Register API - Creating user in database...');
     await db.user.create({
       data: {
         email: sanitizedEmail,
@@ -174,8 +148,6 @@ const registerHandler = async (request: Request, context: any) => {
         role: 'user'
       }
     });
-
-    console.log('Register API - User created successfully');
 
     logSecurityEvent(
       'USER_REGISTERED',
@@ -187,7 +159,6 @@ const registerHandler = async (request: Request, context: any) => {
       }
     );
 
-    console.log('Register API - Registration completed successfully');
     return NextResponse.json(
       { success: true, message: 'User registered successfully' },
       { status: 201 }

@@ -10,12 +10,6 @@ const loginHandler = async (request: Request, context: any) => {
   try {
     // Use rawBody from context instead of reading request.json() again
     const body = context.rawBody ? JSON.parse(context.rawBody) : await request.json();
-    console.log('Login API - Received data:', { 
-      email: body.email, 
-      hasPassword: !!body.password,
-      hasRecaptchaToken: !!body.recaptchaToken,
-      formStartTime: body.formStartTime
-    });
     
     const { 
       email, 
@@ -28,9 +22,7 @@ const loginHandler = async (request: Request, context: any) => {
 
     // Verify reCAPTCHA
     if (recaptchaToken) {
-      console.log('Login API - Verifying reCAPTCHA...');
       const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, context.clientIP);
-      console.log('Login API - reCAPTCHA result:', recaptchaResult);
       
       if (!recaptchaResult.success) {
         logSecurityEvent(
@@ -45,14 +37,11 @@ const loginHandler = async (request: Request, context: any) => {
         );
       }
     } else {
-      console.log('Login API - No reCAPTCHA token provided');
       return NextResponse.json(
         { success: false, message: 'reCAPTCHA verification required' },
         { status: 400 }
       );
     }
-
-    console.log('Login API - reCAPTCHA verification passed, validating user...');
 
     // Verify honeypot fields
     for (const [fieldName, fieldValue] of Object.entries(honeypotFields)) {

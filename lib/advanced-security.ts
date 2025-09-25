@@ -22,6 +22,7 @@ interface RequestContext {
   fingerprint: string;
   startTime: number;
   headers: Record<string, string>;
+  rawBody?: string;
 }
 
 class AdvancedSecurityManager {
@@ -33,9 +34,16 @@ class AdvancedSecurityManager {
   async isIPBlocked(ip: string): Promise<boolean> {
     try {
       const { db } = await import('./db');
-      return await db.security.isIPBlocked(ip);
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise<boolean>((_, reject) => {
+        setTimeout(() => reject(new Error('IP check timeout')), 5000);
+      });
+      
+      const checkPromise = db.security.isIPBlocked(ip);
+      return await Promise.race([checkPromise, timeoutPromise]);
     } catch (error) {
       console.error('Error checking if IP is blocked:', error);
+      // Return false to allow request to proceed if IP check fails
       return false;
     }
   }
@@ -149,8 +157,9 @@ class AdvancedSecurityManager {
     }
 
     // For POST/PUT requests, validate body
+    let rawBody = '';
     if (request.method === 'POST' || request.method === 'PUT') {
-      const rawBody = await request.text();
+      rawBody = await request.text();
       
       // Validate body size
       const sizeValidation = validateRequestBodySize(rawBody, maxBodySize);
@@ -265,7 +274,8 @@ class AdvancedSecurityManager {
       userAgent,
       fingerprint,
       startTime: Date.now(),
-      headers: Object.fromEntries(request.headers.entries())
+      headers: Object.fromEntries(request.headers.entries()),
+      rawBody
     };
 
     return { valid: true, context };

@@ -8,7 +8,8 @@ import { verifyRecaptchaToken } from '../../../../lib/google-recaptcha';
 
 const registerHandler = async (request: Request, context: any) => {
   try {
-    const body = await request.json();
+    // Use rawBody from context instead of reading request.json() again
+    const body = context.rawBody ? JSON.parse(context.rawBody) : await request.json();
     console.log('Register API - Received data:', { 
       email: body.email, 
       username: body.username, 

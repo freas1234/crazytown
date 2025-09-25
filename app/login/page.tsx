@@ -102,6 +102,7 @@ function LoginContent() {
           email: formData.email,
           password: formData.password,
           recaptchaToken,
+          formStartTime: Date.now(),
           redirectTo,
         }),
       });

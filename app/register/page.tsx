@@ -134,7 +134,8 @@ function RegisterContent() {
         },
         body: JSON.stringify({
           ...formData,
-          recaptchaToken
+          recaptchaToken,
+          formStartTime: Date.now()
         }),
       });
 

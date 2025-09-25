@@ -21,13 +21,13 @@ const registerHandler = async (request: Request, context: any) => {
 
     // Verify reCAPTCHA
     if (recaptchaToken) {
-      const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, context.clientIP, 'form_submit', 0.5);
+      const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, context.clientIP);
       if (!recaptchaResult.success) {
         logSecurityEvent(
           'CAPTCHA_FAILED',
           'MEDIUM',
           context.clientIP,
-          { type: 'recaptcha', errors: recaptchaResult.errors, score: recaptchaResult.score }
+          { type: 'recaptcha', errors: recaptchaResult.errors }
         );
         return NextResponse.json(
           { success: false, message: 'reCAPTCHA verification failed' },

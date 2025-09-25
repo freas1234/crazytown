@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      events: events.map((event: any) => ({
+      events: events.map(event => ({
         id: (event as any)._id?.toString() || event.id || '',
         type: event.type,
         severity: event.severity,

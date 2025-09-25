@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      blockedIPs: blockedIPs.map((ip: any) => ({
+      blockedIPs: blockedIPs.map(ip => ({
         ip: ip.ip,
         reason: ip.reason,
         blockedAt: ip.blockedAt,

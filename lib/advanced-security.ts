@@ -103,6 +103,7 @@ class AdvancedSecurityManager {
       requireAuth = false,
       requireAdmin = false
     } = config;
+    
 
     const clientIP = getClientIP(request);
     const userAgent = request.headers.get('user-agent') || 'unknown';
@@ -230,6 +231,7 @@ class AdvancedSecurityManager {
 
       // Timing validation
       if (requireTiming) {
+        console.log('Timing validation enabled, checking form timing...');
         const { formStartTime } = body;
         if (!formStartTime || (Date.now() - formStartTime) < 2000) {
           this.markSuspiciousActivity(clientIP);
@@ -245,6 +247,8 @@ class AdvancedSecurityManager {
             )
           };
         }
+      } else {
+        console.log('Timing validation disabled, skipping timing check');
       }
     }
 

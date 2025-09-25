@@ -127,6 +127,24 @@ function RegisterContent() {
     setRecaptchaError('');
 
     try {
+      // First verify reCAPTCHA
+      const captchaResponse = await fetch('/api/auth/verify-captcha', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ recaptchaToken }),
+      });
+
+      const captchaResult = await captchaResponse.json();
+
+      if (!captchaResult.success) {
+        setRecaptchaError(captchaResult.message || 'reCAPTCHA verification failed');
+        setRecaptchaToken('');
+        return;
+      }
+
+      // Then proceed with registration
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {

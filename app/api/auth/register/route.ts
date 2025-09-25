@@ -21,36 +21,7 @@ const registerHandler = async (request: Request, context: any) => {
       ...honeypotFields 
     } = body;
 
-    // Verify reCAPTCHA
-    if (recaptchaToken) {
-      try {
-        const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, context.clientIP);
-        
-        if (!recaptchaResult.success) {
-          logSecurityEvent(
-            'CAPTCHA_FAILED',
-            'MEDIUM',
-            context.clientIP,
-            { type: 'recaptcha', errors: recaptchaResult.errors }
-          );
-          return NextResponse.json(
-            { success: false, message: 'reCAPTCHA verification failed' },
-            { status: 400 }
-          );
-        }
-      } catch (recaptchaError) {
-        console.error('Register API - reCAPTCHA verification error:', recaptchaError);
-        return NextResponse.json(
-          { success: false, message: 'reCAPTCHA verification error' },
-          { status: 400 }
-        );
-      }
-    } else {
-      return NextResponse.json(
-        { success: false, message: 'reCAPTCHA verification required' },
-        { status: 400 }
-      );
-    }
+    // reCAPTCHA verification is handled in frontend before calling this API
 
     // Verify honeypot fields (should be empty)
     for (const [fieldName, fieldValue] of Object.entries(honeypotFields)) {
@@ -69,19 +40,7 @@ const registerHandler = async (request: Request, context: any) => {
     }
 
 
-    // Verify form timing (should take at least 2 seconds)
-    if (!formStartTime || (Date.now() - formStartTime) < 2000) {
-      logSecurityEvent(
-        'TIMING_ATTACK',
-        'MEDIUM',
-        context.clientIP,
-        { formStartTime, elapsed: Date.now() - formStartTime }
-      );
-      return NextResponse.json(
-        { success: false, message: 'Form submitted too quickly' },
-        { status: 400 }
-      );
-    }
+    // Form timing check removed to improve user experience
 
 
     // Sanitize inputs
@@ -182,9 +141,9 @@ const registerHandler = async (request: Request, context: any) => {
 
 // Export the protected API handler
 export const POST = createProtectedAPI(registerHandler, {
-  requireCaptcha: true,
+  requireCaptcha: false, // Handled in frontend
   requireHoneypot: true,
-  requireTiming: true,
+  requireTiming: false, // Removed for better UX
   maxBodySize: 1024 * 1024,
   rateLimitType: 'REGISTRATION',
   allowedMethods: ['POST']

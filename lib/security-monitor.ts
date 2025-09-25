@@ -1,4 +1,4 @@
-interface SecurityEvent {
+﻿interface SecurityEvent {
   id: string;
   type: 'RATE_LIMIT_EXCEEDED' | 'SUSPICIOUS_ACTIVITY' | 'INVALID_INPUT' | 'AUTH_FAILURE' | 'DOS_ATTEMPT' | 'CAPTCHA_FAILED' | 'HONEYPOT_TRIGGERED' | 'TIMING_ATTACK' | 'USER_LOGIN' | 'USER_REGISTERED' | 'LOGIN_ERROR' | 'REGISTRATION_ERROR' | 'IP_BLOCKED' | 'IP_UNBLOCKED' | 'BLOCKED_IP_ACCESS' | 'INVALID_METHOD' | 'INVALID_JSON' | 'API_ERROR' | 'UNAUTHORIZED_ACCESS';
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
@@ -174,18 +174,29 @@ export async function logSecurityEvent(
   // Log to in-memory monitor
   securityMonitor.logEvent(type, severity, clientIP, details, userAgent);
   
-  // Also log to database
+  // Also log to database with timeout
   try {
     const { db } = await import('./db');
-    await db.security.createEvent({
+    
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Database timeout')), 2000);
+    });
+    
+    const logPromise = db.security.createEvent({
       type,
       severity,
       ipAddress: clientIP,
       userAgent,
       details
     });
+    
+    await Promise.race([logPromise, timeoutPromise]);
   } catch (error) {
-    console.error('Failed to log security event to database:', error);
+    // Only log error if it's not a timeout
+    if (error instanceof Error && !error.message.includes('timeout')) {
+      console.error('Failed to log security event to database:', error);
+    }
   }
 }
 

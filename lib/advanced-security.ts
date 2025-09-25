@@ -36,14 +36,13 @@ class AdvancedSecurityManager {
       const { db } = await import('./db');
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise<boolean>((_, reject) => {
-        setTimeout(() => reject(new Error('IP check timeout')), 3000);
+        setTimeout(() => reject(new Error('IP check timeout')), 1500);
       });
       
       const checkPromise = db.security.isIPBlocked(ip);
       return await Promise.race([checkPromise, timeoutPromise]);
     } catch (error) {
-      console.warn('IP check failed, allowing request to proceed:', error instanceof Error ? error.message : 'Unknown error');
-      // Return false to allow request to proceed if IP check fails
+      // Silently allow request to proceed if IP check fails
       return false;
     }
   }

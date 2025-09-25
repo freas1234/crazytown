@@ -21,36 +21,7 @@ const registerHandler = async (request: Request, context: any) => {
       ...honeypotFields 
     } = body;
 
-    // Verify reCAPTCHA
-    if (recaptchaToken) {
-      try {
-        const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, context.clientIP);
-        
-        if (!recaptchaResult.success) {
-          logSecurityEvent(
-            'CAPTCHA_FAILED',
-            'MEDIUM',
-            context.clientIP,
-            { type: 'recaptcha', errors: recaptchaResult.errors }
-          );
-          return NextResponse.json(
-            { success: false, message: 'reCAPTCHA verification failed' },
-            { status: 400 }
-          );
-        }
-      } catch (recaptchaError) {
-        console.error('Register API - reCAPTCHA verification error:', recaptchaError);
-        return NextResponse.json(
-          { success: false, message: 'reCAPTCHA verification error' },
-          { status: 400 }
-        );
-      }
-    } else {
-      return NextResponse.json(
-        { success: false, message: 'reCAPTCHA verification required' },
-        { status: 400 }
-      );
-    }
+    // reCAPTCHA verification is handled in frontend before calling this API
 
     // Verify honeypot fields (should be empty)
     for (const [fieldName, fieldValue] of Object.entries(honeypotFields)) {

@@ -9,6 +9,14 @@ import { verifyRecaptchaToken } from '../../../../lib/google-recaptcha';
 const registerHandler = async (request: Request, context: any) => {
   try {
     const body = await request.json();
+    console.log('Register API - Received data:', { 
+      email: body.email, 
+      username: body.username, 
+      hasPassword: !!body.password,
+      hasRecaptchaToken: !!body.recaptchaToken,
+      formStartTime: body.formStartTime
+    });
+    
     const { 
       email, 
       username, 
@@ -21,7 +29,10 @@ const registerHandler = async (request: Request, context: any) => {
 
     // Verify reCAPTCHA
     if (recaptchaToken) {
+      console.log('Register API - Verifying reCAPTCHA...');
       const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, context.clientIP);
+      console.log('Register API - reCAPTCHA result:', recaptchaResult);
+      
       if (!recaptchaResult.success) {
         logSecurityEvent(
           'CAPTCHA_FAILED',
@@ -35,6 +46,7 @@ const registerHandler = async (request: Request, context: any) => {
         );
       }
     } else {
+      console.log('Register API - No reCAPTCHA token provided');
       return NextResponse.json(
         { success: false, message: 'reCAPTCHA verification required' },
         { status: 400 }

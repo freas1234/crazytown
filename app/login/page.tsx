@@ -30,7 +30,6 @@ function LoginContent() {
   const [isDiscordLoading, setIsDiscordLoading] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState('');
   const [recaptchaError, setRecaptchaError] = useState('');
-  const [formStartTime] = useState(Date.now()); // Set form start time when component mounts
 
   // Use localizedContent instead of t
   const t = localizedContent;
@@ -102,7 +101,6 @@ function LoginContent() {
         },
         body: JSON.stringify({
           recaptchaToken,
-          formStartTime,
         }),
       });
 

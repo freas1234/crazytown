@@ -31,7 +31,6 @@ function RegisterContent() {
   const [isDiscordLoading, setIsDiscordLoading] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState('');
   const [recaptchaError, setRecaptchaError] = useState('');
-  const [formStartTime] = useState(Date.now()); // Set form start time when component mounts
 
   useEffect(() => {
     if (error === 'PasswordMismatch') {

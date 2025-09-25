@@ -571,12 +571,19 @@ export const db = {
       details?: Record<string, any>;
     }) => {
       try {
-        const event = new SecurityEvent({
+        const { db } = await connectToDatabase();
+        const securityEventsCollection = db.collection('securityevents');
+        
+        const event = {
+          id: uuidv4(),
           ...eventData,
           timestamp: new Date(),
-          resolved: false
-        });
-        await event.save();
+          resolved: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        
+        await securityEventsCollection.insertOne(event);
         return event;
       } catch (error) {
         console.error('Error creating security event:', error);
@@ -586,11 +593,16 @@ export const db = {
 
     getEvents: async (limit: number = 50, offset: number = 0) => {
       try {
-        const events = await SecurityEvent.find({})
+        const { db } = await connectToDatabase();
+        const securityEventsCollection = db.collection('securityevents');
+        
+        const events = await securityEventsCollection
+          .find({})
           .sort({ timestamp: -1 })
           .limit(limit)
           .skip(offset)
-          .lean();
+          .toArray();
+        
         return events;
       } catch (error) {
         console.error('Error fetching security events:', error);
@@ -600,10 +612,15 @@ export const db = {
 
     getEventsByIP: async (ip: string, limit: number = 50) => {
       try {
-        const events = await SecurityEvent.find({ ipAddress: ip })
+        const { db } = await connectToDatabase();
+        const securityEventsCollection = db.collection('securityevents');
+        
+        const events = await securityEventsCollection
+          .find({ ipAddress: ip })
           .sort({ timestamp: -1 })
           .limit(limit)
-          .lean();
+          .toArray();
+        
         return events;
       } catch (error) {
         console.error('Error fetching events by IP:', error);
@@ -613,33 +630,36 @@ export const db = {
 
     getEventStats: async () => {
       try {
-        const totalEvents = await SecurityEvent.countDocuments();
+        const { db } = await connectToDatabase();
+        const securityEventsCollection = db.collection('securityevents');
         
-        const eventsByType = await SecurityEvent.aggregate([
+        const totalEvents = await securityEventsCollection.countDocuments();
+        
+        const eventsByType = await securityEventsCollection.aggregate([
           { $group: { _id: '$type', count: { $sum: 1 } } }
-        ]);
+        ]).toArray();
         
-        const eventsBySeverity = await SecurityEvent.aggregate([
+        const eventsBySeverity = await securityEventsCollection.aggregate([
           { $group: { _id: '$severity', count: { $sum: 1 } } }
-        ]);
+        ]).toArray();
         
-        const topIPs = await SecurityEvent.aggregate([
+        const topIPs = await securityEventsCollection.aggregate([
           { $group: { _id: '$ipAddress', count: { $sum: 1 } } },
           { $sort: { count: -1 } },
           { $limit: 10 }
-        ]);
+        ]).toArray();
 
         return {
           totalEvents,
-          eventsByType: eventsByType.reduce((acc, item) => {
+          eventsByType: eventsByType.reduce((acc: Record<string, number>, item: any) => {
             acc[item._id] = item.count;
             return acc;
           }, {}),
-          eventsBySeverity: eventsBySeverity.reduce((acc, item) => {
+          eventsBySeverity: eventsBySeverity.reduce((acc: Record<string, number>, item: any) => {
             acc[item._id] = item.count;
             return acc;
           }, {}),
-          topIPs: topIPs.map(item => ({
+          topIPs: topIPs.map((item: any) => ({
             ip: item._id,
             count: item.count
           }))
@@ -658,21 +678,27 @@ export const db = {
     // Blocked IPs
     blockIP: async (ip: string, reason: string, blockedBy: string, duration: number = 24 * 60 * 60 * 1000) => {
       try {
+        const { db } = await connectToDatabase();
+        const blockedIPsCollection = db.collection('blockedips');
+        
         // Check if already blocked
-        const existing = await BlockedIP.findOne({ ip });
+        const existing = await blockedIPsCollection.findOne({ ip });
         if (existing) {
           throw new Error('IP is already blocked');
         }
 
-        const blockedIP = new BlockedIP({
+        const blockedIP = {
+          id: uuidv4(),
           ip,
           reason,
           blockedBy,
           duration,
-          blockedAt: new Date()
-        });
+          blockedAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
 
-        await blockedIP.save();
+        await blockedIPsCollection.insertOne(blockedIP);
         return blockedIP;
       } catch (error) {
         console.error('Error blocking IP:', error);
@@ -682,16 +708,26 @@ export const db = {
 
     unblockIP: async (ip: string, unblockedBy: string) => {
       try {
-        const blockedIP = await BlockedIP.findOne({ ip });
+        const { db } = await connectToDatabase();
+        const blockedIPsCollection = db.collection('blockedips');
+        
+        const blockedIP = await blockedIPsCollection.findOne({ ip });
         if (!blockedIP) {
           throw new Error('IP is not blocked');
         }
 
-        blockedIP.unblockedAt = new Date();
-        blockedIP.unblockedBy = unblockedBy;
-        await blockedIP.save();
+        await blockedIPsCollection.updateOne(
+          { ip },
+          { 
+            $set: { 
+              unblockedAt: new Date(),
+              unblockedBy,
+              updatedAt: new Date()
+            }
+          }
+        );
 
-        return blockedIP;
+        return { ...blockedIP, unblockedAt: new Date(), unblockedBy };
       } catch (error) {
         console.error('Error unblocking IP:', error);
         throw error;
@@ -700,9 +736,16 @@ export const db = {
 
     getBlockedIPs: async () => {
       try {
-        const blockedIPs = await BlockedIP.find({
-          unblockedAt: { $exists: false }
-        }).sort({ blockedAt: -1 }).lean();
+        const { db } = await connectToDatabase();
+        const blockedIPsCollection = db.collection('blockedips');
+        
+        const blockedIPs = await blockedIPsCollection
+          .find({
+            unblockedAt: { $exists: false }
+          })
+          .sort({ blockedAt: -1 })
+          .toArray();
+        
         return blockedIPs;
       } catch (error) {
         console.error('Error fetching blocked IPs:', error);
@@ -712,7 +755,10 @@ export const db = {
 
     isIPBlocked: async (ip: string) => {
       try {
-        const blockedIP = await BlockedIP.findOne({
+        const { db } = await connectToDatabase();
+        const blockedIPsCollection = db.collection('blockedips');
+        
+        const blockedIP = await blockedIPsCollection.findOne({
           ip,
           unblockedAt: { $exists: false }
         });
@@ -725,8 +771,11 @@ export const db = {
 
     deleteExpiredBlocks: async () => {
       try {
+        const { db } = await connectToDatabase();
+        const blockedIPsCollection = db.collection('blockedips');
+        
         const now = new Date();
-        const result = await BlockedIP.deleteMany({
+        const result = await blockedIPsCollection.deleteMany({
           $or: [
             { unblockedAt: { $exists: true } },
             {

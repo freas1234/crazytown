@@ -49,7 +49,7 @@ export async function GET() {
   }
 }
 
-export async function PUT(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -60,7 +60,8 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    const data = await request.json();
+    const body = await request.json();
+    const { data } = body;
     
     if (!data) {
       return NextResponse.json(

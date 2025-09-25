@@ -84,11 +84,11 @@ export default function AdminSettings() {
       setSuccess(null);
       
       const response = await fetch('/api/admin/settings', {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(settings),
+        body: JSON.stringify({ data: settings }),
       });
       
       if (!response.ok) {
@@ -220,21 +220,7 @@ export default function AdminSettings() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    try {
-      setSaving(true);
-      setError(null);
-      setSuccess(null);
-        
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSuccess('Settings saved successfully');
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      setError('Failed to save settings');
-    } finally {
-      setSaving(false);
-    }
+    await handleSave();
   };
 
   return (

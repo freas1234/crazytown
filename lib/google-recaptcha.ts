@@ -52,20 +52,28 @@ class GoogleRecaptchaService {
       const data: RecaptchaResponse = await response.json();
 
       if (data.success) {
-        // For reCAPTCHA v3, check score and action
-        const score = data.score || 0;
-        const isValidAction = !action || data.action === action;
-        const isValidScore = score >= threshold;
+        // Check if this is reCAPTCHA v3 (has score) or v2 (no score)
+        if (data.score !== undefined) {
+          // reCAPTCHA v3 - check score and action
+          const score = data.score || 0;
+          const isValidAction = !action || data.action === action;
+          const isValidScore = score >= threshold;
 
-        if (isValidAction && isValidScore) {
+          if (isValidAction && isValidScore) {
+            return {
+              success: true,
+              score: score,
+            };
+          } else {
+            return {
+              success: false,
+              errors: [`Score too low: ${score} (minimum: ${threshold})`],
+            };
+          }
+        } else {
+          // reCAPTCHA v2 - no score validation needed
           return {
             success: true,
-            score: score,
-          };
-        } else {
-          return {
-            success: false,
-            errors: [`Score too low: ${score} (minimum: ${threshold})`],
           };
         }
       } else {

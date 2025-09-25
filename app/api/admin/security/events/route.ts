@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      events: events.map(event => ({
-        id: (event as any)._id?.toString() || event.id || '',
+      events: events.map((event: any) => ({
+        id: event._id?.toString() || event.id || '',
         type: event.type,
         severity: event.severity,
         clientIP: event.ipAddress,

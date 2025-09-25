@@ -4,11 +4,19 @@ import { verifyRecaptchaToken } from '../../../../lib/google-recaptcha';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { recaptchaToken } = body;
+    const { recaptchaToken, formStartTime } = body;
 
     if (!recaptchaToken) {
       return NextResponse.json(
         { success: false, message: 'reCAPTCHA token required' },
+        { status: 400 }
+      );
+    }
+
+    // Verify form timing (should take at least 2 seconds)
+    if (!formStartTime || (Date.now() - formStartTime) < 2000) {
+      return NextResponse.json(
+        { success: false, message: 'Form submitted too quickly' },
         { status: 400 }
       );
     }

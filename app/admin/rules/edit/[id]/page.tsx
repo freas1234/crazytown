@@ -313,9 +313,11 @@ export default function EditRule({ params }: PageProps) {
                         value={formData.description.en}
                         onChange={handleInputChange}
                         onKeyDown={(e) => {
+                          // Only prevent Enter if Shift is not pressed
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
                           }
+                          // Shift+Enter will work normally for new lines
                         }}
                         className="bg-gray-900/50 border-gray-700 min-h-[150px] resize-y"
                         required
@@ -348,9 +350,11 @@ export default function EditRule({ params }: PageProps) {
                         value={formData.description.ar}
                         onChange={handleInputChange}
                         onKeyDown={(e) => {
+                          // Only prevent Enter if Shift is not pressed
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
                           }
+                          // Shift+Enter will work normally for new lines
                         }}
                         className="bg-gray-900/50 border-gray-700 min-h-[150px] text-right resize-y"
                         dir="rtl"

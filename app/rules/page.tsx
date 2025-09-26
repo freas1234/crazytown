@@ -183,7 +183,7 @@ export default function RulesPage() {
                     </div>
                     
                     {expandedRule === rule.id && (
-                      <div className="mt-4 pt-4 border-t border-gray-800 text-gray-300 whitespace-pre-line">
+                                           <div className="mt-4 pt-4 border-t border-gray-800 text-gray-300 whitespace-pre-line">
                         {locale === 'en' ? rule.description.en : rule.description.ar}
                       </div>
                     )}

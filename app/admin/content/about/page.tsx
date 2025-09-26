@@ -23,6 +23,7 @@ interface AboutContent {
   subtitle: { en: string; ar: string };
   aboutText: { en: string; ar: string };
   serverInfoText: { en: string; ar: string };
+  heroImage: string;
   featuresItems: Array<{
     id?: string;
     title: { en: string; ar: string };
@@ -42,6 +43,7 @@ export default function AboutContentPage() {
     subtitle: { en: '', ar: '' },
     aboutText: { en: '', ar: '' },
     serverInfoText: { en: '', ar: '' },
+    heroImage: '',
     featuresItems: [],
     teamMembers: []
   });
@@ -308,6 +310,36 @@ export default function AboutContentPage() {
                     placeholder={activeLanguage === 'en' ? "Server information description..." : "وصف معلومات السيرفر..."}
                   />
                 </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300">Hero Image URL</label>
+                  <Input 
+                    value={content.heroImage || ''}
+                    onChange={(e) => setContent(prev => ({ ...prev, heroImage: e.target.value }))}
+                    className="bg-gray-900/50 border-gray-700"
+                    placeholder="https://example.com/hero-image.jpg or /hero-image.jpg"
+                  />
+                  <p className="text-xs text-gray-400">
+                    Enter a full URL (https://...) or a local path (/...) for the main hero image
+                  </p>
+                  {content.heroImage && (
+                    <div className="mt-2">
+                      <p className="text-xs text-gray-400 mb-2">Preview:</p>
+                      <div className="w-full h-32 rounded-lg overflow-hidden border border-gray-700">
+                        <Image 
+                          src={content.heroImage} 
+                          alt="Hero Image Preview" 
+                          width={400} 
+                          height={128}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder-product.jpg';
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -417,8 +449,11 @@ export default function AboutContentPage() {
                               value={member.avatar || ''}
                               onChange={(e) => handleTeamMemberChange(index, 'avatar', e.target.value)}
                               className="bg-gray-900/50 border-gray-700 text-sm"
-                              placeholder="/placeholder-avatar.svg"
+                              placeholder="https://example.com/avatar.jpg or /placeholder-avatar.svg"
                             />
+                            <p className="text-xs text-gray-400">
+                              Enter a full URL (https://...) or a local path (/...)
+                            </p>
                           </div>
                         </div>
                         

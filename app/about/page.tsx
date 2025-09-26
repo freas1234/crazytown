@@ -27,6 +27,7 @@ interface AboutContent {
   subtitle: { en: string; ar: string };
   aboutText: { en: string; ar: string };
   serverInfoText: { en: string; ar: string };
+  heroImage: string;
   featuresItems: FeatureItem[];
   teamMembers: TeamMember[];
 }
@@ -48,6 +49,7 @@ const defaultContent: AboutContent = {
     en: "Our server features a custom economy system, unique job opportunities, and regular events. We pride ourselves on maintaining a balanced gameplay experience that rewards both casual players and those who invest significant time in the server. With custom scripts, vehicles, and properties, Crazy Town offers something for everyone.",
     ar: "يتميز السيرفر بنظام اقتصادي مخصص، وفرص عمل فريدة، وفعاليات منتظمة. نحن نفتخر بالحفاظ على تجربة لعب متوازنة تكافئ كلاً من اللاعبين العاديين وأولئك الذين يستثمرون وقتًا كبيرًا في السيرفر. مع نصوص برمجية مخصصة ومركبات وممتلكات، يقدم كريزي تاون شيئًا للجميع."
   },
+  heroImage: "/placeholder-product.svg",
   featuresItems: [
     {
       title: {
@@ -202,11 +204,14 @@ export default function AboutPage() {
                 
                 <div className="overflow-hidden rounded-lg border border-primary/30 bg-secondary/80 shadow-md hover:shadow-xl transition-shadow duration-300">
                   <Image 
-                    src="/placeholder-product.svg" 
+                    src={content.heroImage || "/placeholder-product.svg"} 
                     alt="Server Screenshot" 
                     width={600}
                     height={400}
                     className="w-full h-auto rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder-product.svg";
+                    }}
                   />
                 </div>
               </div>

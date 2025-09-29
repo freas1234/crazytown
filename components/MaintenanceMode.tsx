@@ -37,6 +37,7 @@ export default function MaintenanceMode({
       ar: "نحن نقوم حاليًا بإجراء صيانة مجدولة. يرجى التحقق مرة أخرى قريبًا."
     }
   });
+  const [siteName, setSiteName] = useState<string>('WEXON STORE');
   
   useEffect(() => {
     setMounted(true);
@@ -70,6 +71,9 @@ export default function MaintenanceMode({
               ar: data.content.ar?.message || content.message.ar
             }
           });
+        }
+        if (data.siteName) {
+          setSiteName(data.siteName);
         }
       }
     } catch (error) {
@@ -106,8 +110,8 @@ export default function MaintenanceMode({
       <div className="max-w-md w-full p-8 bg-gray-900/70 backdrop-blur-md rounded-lg border border-primary/20 shadow-lg z-10">
         <div className="flex justify-center mb-6">
           <div className="relative flex items-center">
-            <span className="text-primary font-display text-3xl font-bold animate-text-flicker">CRAZY</span>
-            <span className="text-white font-display text-3xl font-bold">TOWN</span>
+            <span className="text-primary font-display text-3xl font-bold animate-text-flicker">{siteName.split(' ')[0] || 'CRAZY'}</span>
+            <span className="text-white font-display text-3xl font-bold">{siteName.split(' ').slice(1).join(' ') || 'TOWN'}</span>
           </div>
         </div>
         
@@ -157,7 +161,7 @@ export default function MaintenanceMode({
       </div>
       
       <div className="mt-8 text-gray-500 text-sm">
-        &copy; {new Date().getFullYear()} CrazyTown
+        &copy; {new Date().getFullYear()} {siteName.replace(/\s+/g, '')}
       </div>
     </div>
   );

@@ -17,9 +17,17 @@ export async function GET() {
     console.log('API: Maintenance mode is:', maintenanceEnabled);
     
     let pageContent = null;
+    let siteName = 'Crazy Town';
+    
     try {
       const { db } = await connectToDatabase();
       pageContent = await db.collection('pageContent').findOne({ page: 'maintenance' });
+      
+      // Get site name from settings
+      const settings = await db.collection('settings').findOne({});
+      if (settings?.siteName) {
+        siteName = settings.siteName;
+      }
     } catch (dbError) {
       console.warn('Could not fetch maintenance page content from DB:', dbError);
     }
@@ -36,6 +44,7 @@ export async function GET() {
           message: "نحن نقوم حاليًا بإجراء صيانة مجدولة. يرجى التحقق مرة أخرى قريبًا."
         }
       },
+      siteName: siteName,
       success: true
     });
   } catch (error) {

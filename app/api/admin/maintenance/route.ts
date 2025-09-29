@@ -23,9 +23,10 @@ export async function GET() {
     
     await loadMaintenanceModeFromDb();
     
-    // Get maintenance content
+    // Get maintenance content and site name
     const { db } = await connectToDatabase();
     const pageContent = await db.collection('pageContent').findOne({ page: 'maintenance' });
+    const settings = await db.collection('settings').findOne({});
     
     return NextResponse.json({
       success: true,
@@ -39,7 +40,8 @@ export async function GET() {
           title: "الموقع تحت الصيانة",
           message: "نحن نقوم حاليًا بإجراء صيانة مجدولة. يرجى التحقق مرة أخرى قريبًا."
         }
-      }
+      },
+      siteName: settings?.siteName || 'Crazy Town'
     });
   } catch (error) {
     console.error("Error in GET maintenance:", error);
@@ -86,35 +88,62 @@ export async function POST(request: Request) {
         maintenanceMode: newState,
         success: true
       });
-    } else if (body.content) {
-      // Update maintenance content
+    } else if (body.content || body.siteName) {
+      // Update maintenance content and/or site name
       const { db } = await connectToDatabase();
       
-      // Validate content structure
-      const content = body.content;
-      if (!content.en || !content.ar || 
-          typeof content.en.title !== 'string' || 
-          typeof content.en.message !== 'string' ||
-          typeof content.ar.title !== 'string' || 
-          typeof content.ar.message !== 'string') {
-        return NextResponse.json(
-          { error: "Invalid content format", success: false },
-          { status: 400 }
+      let updateData: any = {
+        updatedAt: new Date(),
+        updatedBy: session.user.id
+      };
+      
+      // Update content if provided
+      if (body.content) {
+        const content = body.content;
+        if (!content.en || !content.ar || 
+            typeof content.en.title !== 'string' || 
+            typeof content.en.message !== 'string' ||
+            typeof content.ar.title !== 'string' || 
+            typeof content.ar.message !== 'string') {
+          return NextResponse.json(
+            { error: "Invalid content format", success: false },
+            { status: 400 }
+          );
+        }
+        updateData.content = content;
+      }
+      
+      // Update site name if provided
+      if (body.siteName) {
+        if (typeof body.siteName !== 'string' || body.siteName.trim().length === 0) {
+          return NextResponse.json(
+            { error: "Invalid site name format", success: false },
+            { status: 400 }
+          );
+        }
+        
+        // Update site name in settings
+        await db.collection('settings').updateOne(
+          {},
+          { 
+            $set: { 
+              siteName: body.siteName.trim(),
+              updatedAt: new Date(),
+              updatedBy: session.user.id
+            } 
+          },
+          { upsert: true }
         );
       }
       
-      // Update or insert the maintenance page content
-      await db.collection('pageContent').updateOne(
-        { page: 'maintenance' },
-        { 
-          $set: { 
-            content,
-            updatedAt: new Date(),
-            updatedBy: session.user.id
-          } 
-        },
-        { upsert: true }
-      );
+      // Update maintenance page content if content was provided
+      if (body.content) {
+        await db.collection('pageContent').updateOne(
+          { page: 'maintenance' },
+          { $set: updateData },
+          { upsert: true }
+        );
+      }
       
       return NextResponse.json({
         success: true,

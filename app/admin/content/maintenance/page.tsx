@@ -22,6 +22,7 @@ export default function MaintenanceTranslationsPage() {
     en: { title: '', message: '' },
     ar: { title: '', message: '' }
   });
+  const [siteName, setSiteName] = useState<string>('WEXON STORE');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -34,6 +35,9 @@ export default function MaintenanceTranslationsPage() {
           const data = await response.json();
           if (data.content) {
             setMaintenanceContent(data.content);
+          }
+          if (data.siteName) {
+            setSiteName(data.siteName);
           }
         }
       } catch (error) {
@@ -57,7 +61,8 @@ export default function MaintenanceTranslationsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          content: maintenanceContent
+          content: maintenanceContent,
+          siteName: siteName
         }),
       });
       
@@ -137,6 +142,21 @@ export default function MaintenanceTranslationsPage() {
                   </AlertDescription>
                 </Alert>
                 
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Site Name
+                  </label>
+                  <Input
+                    value={siteName}
+                    onChange={(e) => setSiteName(e.target.value)}
+                    placeholder="WEXON STORE"
+                    className="bg-gray-900 border-gray-700"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    This will be displayed in the maintenance page header
+                  </p>
+                </div>
+                
                 <Tabs defaultValue="en" className="mb-6">
                   <TabsList className="grid grid-cols-2 w-48 mb-6">
                     <TabsTrigger value="en">English</TabsTrigger>
@@ -208,16 +228,28 @@ export default function MaintenanceTranslationsPage() {
                     <div className="p-4 bg-gray-900 rounded-lg border border-gray-800">
                       <h4 className="text-sm font-medium text-gray-400 mb-2">English</h4>
                       <div className="bg-gray-800 p-4 rounded-lg">
-                        <h5 className="text-lg font-bold text-white mb-2">{maintenanceContent.en.title || 'Site Under Maintenance'}</h5>
-                        <p className="text-gray-300">{maintenanceContent.en.message || 'We\'re currently performing scheduled maintenance. Please check back soon.'}</p>
+                        <div className="flex justify-center mb-4">
+                          <div className="relative flex items-center">
+                            <span className="text-primary font-display text-2xl font-bold animate-text-flicker">{siteName.split(' ')[0] || 'WEXON '}</span>
+                            <span className="text-white font-display text-2xl font-bold">{siteName.split(' ').slice(1).join(' ') || 'STORE'}</span>
+                          </div>
+                        </div>
+                        <h5 className="text-lg font-bold text-white mb-2 text-center">{maintenanceContent.en.title || 'Site Under Maintenance'}</h5>
+                        <p className="text-gray-300 text-center">{maintenanceContent.en.message || 'We\'re currently performing scheduled maintenance. Please check back soon.'}</p>
                       </div>
                     </div>
                     
                     <div className="p-4 bg-gray-900 rounded-lg border border-gray-800">
                       <h4 className="text-sm font-medium text-gray-400 mb-2">Arabic (العربية)</h4>
                       <div className="bg-gray-800 p-4 rounded-lg text-right" dir="rtl">
-                        <h5 className="text-lg font-bold text-white mb-2">{maintenanceContent.ar.title || 'الموقع تحت الصيانة'}</h5>
-                        <p className="text-gray-300">{maintenanceContent.ar.message || 'نحن نقوم حاليًا بإجراء صيانة مجدولة. يرجى التحقق مرة أخرى قريبًا.'}</p>
+                        <div className="flex justify-center mb-4">
+                          <div className="relative flex items-center">
+                            <span className="text-primary font-display text-2xl font-bold animate-text-flicker">{siteName.split(' ')[0] || 'WEXON'}</span>
+                            <span className="text-white font-display text-2xl font-bold">{siteName.split(' ').slice(1).join(' ') || 'STORE'}</span>
+                          </div>
+                        </div>
+                        <h5 className="text-lg font-bold text-white mb-2 text-center">{maintenanceContent.ar.title || 'الموقع تحت الصيانة'}</h5>
+                        <p className="text-gray-300 text-center">{maintenanceContent.ar.message || 'نحن نقوم حاليًا بإجراء صيانة مجدولة. يرجى التحقق مرة أخرى قريبًا.'}</p>
                       </div>
                     </div>
                   </div>

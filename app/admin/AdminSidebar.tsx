@@ -114,8 +114,11 @@ export default function AdminSidebar() {
   return (
     <RoleGuard
       allowedRoles={['admin', 'owner']}
-      redirectTo="/login"
-      fallback={<div>Loading...</div>}
+      fallback={<div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="animate-pulse p-4">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>}
     >
       <aside className={cn(
         "bg-card/95 backdrop-blur-lg border-r border-border h-screen flex-shrink-0 flex flex-col relative z-10 transition-all duration-300",

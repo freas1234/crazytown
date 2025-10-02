@@ -253,17 +253,17 @@ export default function EditProduct({ params }: { params: Promise<{ id: string }
   
   if (!productId) {
     return (
-      <RoleGuard allowedRoles={['admin', 'owner']} redirectTo="/login">
+      <RoleGuard allowedRoles={['admin', 'owner']}>
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-white">
+            <h1 className="text-3xl font-bold text-foreground">
               <span className="cyberpunk-border inline-block">Edit Product</span>
             </h1>
           </div>
-          <Card className="game-card border-gray-800 bg-secondary/80 backdrop-blur-sm max-w-4xl mx-auto">
+          <Card className="game-card border-border bg-card/80 backdrop-blur-sm max-w-4xl mx-auto">
             <CardContent className="pt-6">
               <div className="space-y-4">
-                <Skeleton className="h-8 w-full bg-gray-700" />
+                <Skeleton className="h-8 w-full bg-muted" />
                 <Skeleton className="h-24 w-full bg-gray-700" />
                 <Skeleton className="h-10 w-full bg-gray-700" />
                 <Skeleton className="h-10 w-1/3 bg-gray-700" />
@@ -276,10 +276,10 @@ export default function EditProduct({ params }: { params: Promise<{ id: string }
   }
 
   return (
-    <RoleGuard allowedRoles={['admin', 'owner']} redirectTo="/login">
+    <RoleGuard allowedRoles={['admin', 'owner']}>
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             <span className="cyberpunk-border inline-block">Edit Product</span>
           </h1>
           <Button variant="outline" size="sm" asChild className="gap-1 border-primary/30 hover:bg-primary/20 hover:text-primary w-full sm:w-auto">
@@ -292,15 +292,15 @@ export default function EditProduct({ params }: { params: Promise<{ id: string }
           </Button>
         </div>
         
-        <Card className="game-card border-gray-800 bg-secondary/80 backdrop-blur-sm max-w-4xl mx-auto">
+        <Card className="game-card border-border bg-card/80 backdrop-blur-sm max-w-4xl mx-auto">
           <CardHeader>
-            <CardTitle className="text-white">Edit Product</CardTitle>
-            <CardDescription className="text-gray-400">Update product information</CardDescription>
+            <CardTitle className="text-foreground">Edit Product</CardTitle>
+            <CardDescription className="text-muted-foreground">Update product information</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="space-y-4">
-                <Skeleton className="h-8 w-full bg-gray-700" />
+                <Skeleton className="h-8 w-full bg-muted" />
                 <Skeleton className="h-24 w-full bg-gray-700" />
                 <Skeleton className="h-10 w-full bg-gray-700" />
                 <Skeleton className="h-10 w-1/3 bg-gray-700" />

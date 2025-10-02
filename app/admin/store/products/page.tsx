@@ -85,10 +85,10 @@ function ProductsContent() {
   };
 
   return (
-    <RoleGuard allowedRoles={['admin', 'owner']} redirectTo="/login">
+    <RoleGuard allowedRoles={['admin', 'owner']}>
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             <span className="cyberpunk-border inline-block">Products Management</span>
           </h1>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">

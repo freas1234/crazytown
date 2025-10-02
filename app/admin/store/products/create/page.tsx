@@ -154,10 +154,10 @@ export default function CreateProduct() {
   };
 
   return (
-    <RoleGuard allowedRoles={['admin', 'owner']} redirectTo="/login">
+    <RoleGuard allowedRoles={['admin', 'owner']}>
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             <span className="cyberpunk-border inline-block">Create New Product</span>
           </h1>
           <Button variant="outline" size="sm" asChild className="gap-1 border-primary/30 hover:bg-primary/20 hover:text-primary w-full sm:w-auto">
@@ -170,15 +170,15 @@ export default function CreateProduct() {
           </Button>
         </div>
         
-        <Card className="game-card border-gray-800 bg-secondary/80 backdrop-blur-sm max-w-4xl mx-auto">
+        <Card className="game-card border-border bg-card/80 backdrop-blur-sm max-w-4xl mx-auto">
           <CardHeader>
-            <CardTitle className="text-white">Create New Product</CardTitle>
-            <CardDescription className="text-gray-400">Add a new product to your store</CardDescription>
+            <CardTitle className="text-foreground">Create New Product</CardTitle>
+            <CardDescription className="text-muted-foreground">Add a new product to your store</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="space-y-4">
-                <Skeleton className="h-8 w-full bg-gray-700" />
+                <Skeleton className="h-8 w-full bg-muted" />
                 <Skeleton className="h-24 w-full bg-gray-700" />
                 <Skeleton className="h-10 w-full bg-gray-700" />
                 <Skeleton className="h-10 w-1/3 bg-gray-700" />
@@ -196,7 +196,7 @@ export default function CreateProduct() {
                         ...formData, 
                         name: { ...formData.name, en: e.target.value } 
                       })}
-                      className="bg-gray-900/50 border-gray-700"
+                      className="bg-input border-border"
                       required
                     />
                   </div>
@@ -211,7 +211,7 @@ export default function CreateProduct() {
                         ...formData, 
                         name: { ...formData.name, ar: e.target.value } 
                       })}
-                      className="bg-gray-900/50 border-gray-700"
+                      className="bg-input border-border"
                       dir="rtl"
                     />
                   </div>
@@ -276,7 +276,7 @@ export default function CreateProduct() {
                       placeholder="0.00" 
                       value={formData.price || ''}
                       onChange={(e) => updatePrice(parseFloat(e.target.value))}
-                      className="bg-gray-900/50 border-gray-700"
+                      className="bg-input border-border"
                       required
                     />
                   </div>
@@ -303,7 +303,7 @@ export default function CreateProduct() {
                           placeholder="0.00" 
                           value={formData.salePrice || ''}
                           onChange={(e) => updateDiscountPercentageFromSalePrice(parseFloat(e.target.value))}
-                          className="bg-gray-900/50 border-gray-700"
+                          className="bg-input border-border"
                         />
                         {formData.salePrice > 0 && formData.price > formData.salePrice && (
                           <div className="bg-primary/20 text-primary px-2 py-1 rounded text-sm whitespace-nowrap">
@@ -321,7 +321,7 @@ export default function CreateProduct() {
                           placeholder="0" 
                           value={discountPercentage || ''}
                           onChange={(e) => updateSalePriceFromPercentage(parseInt(e.target.value))}
-                          className="bg-gray-900/50 border-gray-700"
+                          className="bg-input border-border"
                         />
                         <span className="text-lg font-bold text-primary">%</span>
                         {discountPercentage > 0 && (
@@ -347,7 +347,7 @@ export default function CreateProduct() {
                       placeholder="0" 
                       value={formData.stock || ''}
                       onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
-                      className="bg-gray-900/50 border-gray-700"
+                      className="bg-input border-border"
                       required
                     />
                   </div>
@@ -426,7 +426,7 @@ export default function CreateProduct() {
                       placeholder="https://example.com/download" 
                       value={formData.downloadUrl}
                       onChange={(e) => setFormData({ ...formData, downloadUrl: e.target.value })}
-                      className="bg-gray-900/50 border-gray-700"
+                      className="bg-input border-border"
                     />
                   </div>
                 )}
@@ -443,7 +443,7 @@ export default function CreateProduct() {
                           ...formData, 
                           outOfStockMessage: { ...formData.outOfStockMessage, en: e.target.value } 
                         })}
-                        className="bg-gray-900/50 border-gray-700"
+                        className="bg-input border-border"
                       />
                     </div>
                     
@@ -457,7 +457,7 @@ export default function CreateProduct() {
                           ...formData, 
                           outOfStockMessage: { ...formData.outOfStockMessage, ar: e.target.value } 
                         })}
-                        className="bg-gray-900/50 border-gray-700"
+                        className="bg-input border-border"
                         dir="rtl"
                       />
                     </div>

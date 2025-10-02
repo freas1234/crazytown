@@ -117,7 +117,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <RoleGuard allowedRoles={['admin', 'owner']} redirectTo="/login">
+    <RoleGuard allowedRoles={['admin', 'owner']}>
       <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
         {/* Header */}
         <div className="mb-8">

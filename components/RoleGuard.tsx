@@ -24,7 +24,11 @@ export function RoleGuard({
     // Only redirect if we're not loading and user doesn't have access
     if (!isLoading && (!user || !allowedRoles.includes(user.role))) {
       if (redirectTo) {
-        router.push(redirectTo);
+        // Add a small delay to prevent immediate redirects during initial load
+        const timer = setTimeout(() => {
+          router.push(redirectTo);
+        }, 100);
+        return () => clearTimeout(timer);
       }
     }
   }, [user, isLoading, allowedRoles, redirectTo, router]);

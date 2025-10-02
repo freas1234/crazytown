@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             discordId: session.user.discordId
           });
         }
-      } else {
+      } else if (status === 'unauthenticated') {
         setUser(null);
       }
       

@@ -17,7 +17,7 @@ export default function AdminLayout({
   return (
     <AdminProviders>
       <div className={cn(
-        "flex min-h-screen bg-gray-900",
+        "flex min-h-screen bg-background",
         isRTL ? 'flex-row-reverse' : ''
       )}>
         {/* Sidebar */}
@@ -27,7 +27,7 @@ export default function AdminLayout({
         <div className="flex-1 flex flex-col h-screen overflow-hidden">
           
           {/* Main Content */}
-          <main className="flex-1 overflow-auto bg-gray-900">
+          <main className="flex-1 overflow-auto bg-background">
             <div className="p-4 md:p-6" dir={isRTL ? "rtl" : "ltr"}>
               {children}
             </div>

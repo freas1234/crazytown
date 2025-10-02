@@ -50,11 +50,11 @@ export default function Hero() {
         <div className="mb-6 inline-block relative">
           <span className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-transparent rounded-lg blur-lg"></span>
           <h1 className="relative text-4xl md:text-6xl font-display font-bold mb-2 cyberpunk-border">
-            <span className="text-white animate-text-flicker">{t('hero.title', 'Welcome to Wexon FiveM Server')}</span>
+            <span className="text-foreground animate-text-flicker">{t('hero.title', 'Welcome to Wexon FiveM Server')}</span>
           </h1>
         </div>
         
-        <p className="text-xl md:text-2xl text-gray-400 mb-10 max-w-2xl">{t('hero.subtitle', 'The ultimate gaming experience')}</p>
+        <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl">{t('hero.subtitle', 'The ultimate gaming experience')}</p>
         
         <Link href="/store" className="group relative">
           <span className="absolute -inset-0.5 bg-gradient-to-r from-primary to-primary/50 rounded-lg blur opacity-60 group-hover:opacity-100 transition duration-300"></span>

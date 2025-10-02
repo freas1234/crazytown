@@ -208,7 +208,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
                         )}
                       </div>
                       
-                      <div className="prose prose-invert mb-6">
+                      <div className="mb-6">
                         <div className="text-gray-300 whitespace-pre-line">
                           {product.description[locale]}
                         </div>

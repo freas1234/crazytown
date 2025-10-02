@@ -38,6 +38,12 @@ function MaintenanceWrapper({ children }: { children: ReactNode }) {
                 router.push('/maintenance');
               }
             }
+            
+            // If maintenance mode is on and user is admin, allow access to admin pages
+            if (data.maintenanceMode && isAdmin && pathname.startsWith('/admin')) {
+              // Allow admin to access admin panel during maintenance
+              return;
+            }
           }
         }
       } catch (error) {
@@ -58,7 +64,7 @@ function MaintenanceWrapper({ children }: { children: ReactNode }) {
     );
   }
 
-  if (isMaintenanceMode && !isAdmin) {
+  if (isMaintenanceMode && !isAdmin && pathname !== '/login') {
     console.log('Showing maintenance mode page');
     return <MaintenanceMode customTitle={maintenanceContent?.title} customMessage={maintenanceContent?.message} />;
   }

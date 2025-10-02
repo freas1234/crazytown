@@ -5,8 +5,8 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   
 
-  // Only check maintenance mode in production (not during build/development)
-  if (process.env.NODE_ENV === 'production') {
+  // Check maintenance mode in both production and development
+  // if (process.env.NODE_ENV === 'production') {
 
     try {
       const maintenanceUrl = new URL('/api/maintenance', request.url);
@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
       // Continue with normal flow if maintenance check fails
       // This could happen during build time or if the API is not available
     }
-  }
+  // }
 
   if (path.startsWith('/admin') || path.startsWith('/profile')) {
     const hasSession = request.cookies.has('next-auth.session-token') || 

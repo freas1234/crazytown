@@ -209,9 +209,9 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
                       </div>
                       
                       <div className="prose prose-invert mb-6">
-                        <p className="text-gray-300">
+                        <div className="text-gray-300 whitespace-pre-line">
                           {product.description[locale]}
-                        </p>
+                        </div>
                       </div>
                       
                       <div className="mb-6">
@@ -297,11 +297,11 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
                             </h3>
                           </Link>
                           
-                          <p className="text-gray-400 mb-4 text-sm min-h-[40px]">
+                          <div className="text-gray-400 mb-4 text-sm min-h-[40px] whitespace-pre-line">
                             {product.description[locale].length > 100
                               ? `${product.description[locale].substring(0, 100)}...`
                               : product.description[locale]}
-                          </p>
+                          </div>
                           
                           <div className="flex justify-between items-center mt-auto pt-4 border-t border-gray-800 group-hover:border-primary/30 transition-colors">
                             <span className="text-primary font-bold">${product.price.toFixed(2)}</span>

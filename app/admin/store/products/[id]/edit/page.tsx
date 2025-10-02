@@ -344,30 +344,46 @@ export default function EditProduct({ params }: { params: Promise<{ id: string }
                     <Label htmlFor="descriptionEn">Description (English) *</Label>
                     <Textarea 
                       id="descriptionEn" 
-                      placeholder="Enter product description in English" 
+                      placeholder="Enter product description in English (Use Shift + Enter for new lines)" 
                       value={formData.description.en}
                       onChange={(e) => setFormData({ 
                         ...formData, 
                         description: { ...formData.description, en: e.target.value } 
                       })}
-                      className="bg-gray-900/50 border-gray-700 min-h-[150px]"
+                      onKeyDown={(e) => {
+                        // Only prevent Enter if Shift is not pressed
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                        }
+                        // Shift+Enter will work normally for new lines
+                      }}
+                      className="bg-gray-900/50 border-gray-700 min-h-[150px] resize-y"
                       required
                     />
+                    <p className="text-xs text-gray-400">Press Shift + Enter for new lines</p>
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="descriptionAr">Description (Arabic)</Label>
                     <Textarea 
                       id="descriptionAr" 
-                      placeholder="Enter product description in Arabic" 
+                      placeholder="Enter product description in Arabic (Use Shift + Enter for new lines)" 
                       value={formData.description.ar}
                       onChange={(e) => setFormData({ 
                         ...formData, 
                         description: { ...formData.description, ar: e.target.value } 
                       })}
-                      className="bg-gray-900/50 border-gray-700 min-h-[150px]"
+                      onKeyDown={(e) => {
+                        // Only prevent Enter if Shift is not pressed
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                        }
+                        // Shift+Enter will work normally for new lines
+                      }}
+                      className="bg-gray-900/50 border-gray-700 min-h-[150px] text-right resize-y"
                       dir="rtl"
                     />
+                    <p className="text-xs text-gray-400 text-right">اضغط Shift + Enter للانتقال لسطر جديد</p>
                   </div>
                 </div>
                 

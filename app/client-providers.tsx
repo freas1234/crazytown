@@ -29,9 +29,14 @@ function MaintenanceWrapper({ children }: { children: ReactNode }) {
             }
             console.log('Maintenance mode is:', data.maintenanceMode);
             
-            // If maintenance mode is on and user is not admin and not already on maintenance page
-            if (data.maintenanceMode && !isAdmin && pathname !== '/maintenance') {
-              router.push('/maintenance');
+            // If maintenance mode is on and user is not admin and not already on maintenance page or login page
+            if (data.maintenanceMode && !isAdmin && pathname !== '/maintenance' && pathname !== '/login') {
+              // If user is trying to access register page, redirect to maintenance
+              if (pathname === '/register') {
+                router.push('/maintenance');
+              } else {
+                router.push('/maintenance');
+              }
             }
           }
         }

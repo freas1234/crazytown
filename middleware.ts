@@ -21,7 +21,8 @@ export async function middleware(request: NextRequest) {
             !path.startsWith('/api/') && 
             !path.startsWith('/admin') && 
             path !== '/maintenance' && 
-            path !== '/login') {
+            path !== '/login' &&
+            path !== '/register') {
           
           console.log(`Maintenance mode active, redirecting ${path} to /maintenance`);
           return NextResponse.redirect(new URL('/maintenance', request.url));

@@ -32,12 +32,15 @@ function MaintenanceWrapper({ children }: { children: ReactNode }) {
             }
             console.log('Maintenance mode is:', data.maintenanceMode);
             console.log('User is admin:', isAdmin);
+            console.log('User role:', user?.role);
             console.log('Current pathname:', pathname);
             
             // If maintenance mode is on and user is not admin and not already on maintenance page or login page or admin pages
             if (data.maintenanceMode && !isAdmin && pathname !== '/maintenance' && pathname !== '/login' && !pathname.startsWith('/admin')) {
               console.log('Redirecting non-admin user to maintenance page');
               router.push('/maintenance');
+            } else if (data.maintenanceMode && isAdmin && pathname.startsWith('/admin')) {
+              console.log('Admin accessing admin panel during maintenance - allowing access');
             }
           }
         }
@@ -49,11 +52,11 @@ function MaintenanceWrapper({ children }: { children: ReactNode }) {
     };
 
     checkMaintenanceMode();
-  }, [authLoading, isAdmin, pathname, router]);
+  }, [authLoading, isAdmin, pathname, router, user]);
 
   if (isLoading || authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-950">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -63,6 +66,18 @@ function MaintenanceWrapper({ children }: { children: ReactNode }) {
   if (isMaintenanceMode && !isAdmin && pathname !== '/login' && !pathname.startsWith('/admin')) {
     console.log('Showing maintenance mode page for non-admin user');
     return <MaintenanceMode customTitle={maintenanceContent?.title} customMessage={maintenanceContent?.message} />;
+  }
+
+  // If admin is accessing admin panel during maintenance, allow access
+  if (isMaintenanceMode && isAdmin && pathname.startsWith('/admin')) {
+    console.log('Admin accessing admin panel during maintenance - showing admin content');
+    return <>{children}</>;
+  }
+
+  // If no user and trying to access admin panel, let middleware handle the redirect
+  if (!user && pathname.startsWith('/admin')) {
+    console.log('No user accessing admin panel - letting middleware handle redirect');
+    return <>{children}</>;
   }
 
   console.log('Showing normal content - Maintenance mode:', isMaintenanceMode, 'Is admin:', isAdmin, 'Pathname:', pathname);

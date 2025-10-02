@@ -130,7 +130,7 @@ export default function MaintenanceMode({
             {defaultContent.login[locale as keyof typeof defaultContent.login]}
           </Link>
           
-          {isAdmin && (
+          {!user && (
             <Link 
               href="/admin" 
               className="w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md text-center transition-colors"

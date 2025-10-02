@@ -44,14 +44,14 @@ export default function MaintenanceModeIndicator() {
           isToggling ? 'opacity-70 cursor-not-allowed' : ''
         } ${
           localMaintenanceMode 
-            ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' 
-            : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+            ? 'bg-primary/20 text-primary hover:bg-primary/30 border border-primary/30' 
+            : 'bg-accent/20 text-accent hover:bg-accent/30 border border-accent/30'
         }`}
       >
         {isToggling ? (
           <span className="w-2 h-2 rounded-full mr-2 bg-gray-400 animate-pulse"></span>
         ) : (
-          <span className={`w-2 h-2 rounded-full mr-2 ${localMaintenanceMode ? 'bg-amber-400' : 'bg-green-400'}`}></span>
+          <span className={`w-2 h-2 rounded-full mr-2 ${localMaintenanceMode ? 'bg-primary' : 'bg-accent'}`}></span>
         )}
         <span>{isToggling ? 'Updating...' : localMaintenanceMode ? 'Maintenance Mode' : 'Site Online'}</span>
       </button>

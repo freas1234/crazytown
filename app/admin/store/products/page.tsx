@@ -114,16 +114,16 @@ function ProductsContent() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, index) => (
-              <Card key={index} className="bg-secondary/80 border-gray-800">
+              <Card key={index} className="bg-card/80 border-border">
                 <CardContent className="p-0">
                   <div className="animate-pulse">
-                    <div className="h-40 bg-gray-800"></div>
+                    <div className="h-40 bg-card"></div>
                     <div className="p-4">
-                      <div className="h-6 bg-gray-800 rounded w-3/4 mb-2"></div>
-                      <div className="h-4 bg-gray-800 rounded w-1/2 mb-4"></div>
-                      <div className="h-4 bg-gray-800 rounded w-full mb-2"></div>
-                      <div className="h-4 bg-gray-800 rounded w-full mb-2"></div>
-                      <div className="h-8 bg-gray-800 rounded w-full mt-4"></div>
+                      <div className="h-6 bg-card rounded w-3/4 mb-2"></div>
+                      <div className="h-4 bg-card rounded w-1/2 mb-4"></div>
+                      <div className="h-4 bg-card rounded w-full mb-2"></div>
+                      <div className="h-4 bg-card rounded w-full mb-2"></div>
+                      <div className="h-8 bg-card rounded w-full mt-4"></div>
                     </div>
                   </div>
                 </CardContent>
@@ -131,15 +131,15 @@ function ProductsContent() {
             ))}
           </div>
         ) : products.length === 0 ? (
-          <Card className="bg-secondary/80 border-gray-800">
+          <Card className="bg-card/80 border-border">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="text-gray-500 mb-4">
+              <div className="text-muted-foreground mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
-              <h3 className="text-xl text-white mb-2">No products found</h3>
-              <p className="text-gray-400 mb-6">Get started by creating your first product.</p>
+              <h3 className="text-xl text-foreground mb-2">No products found</h3>
+              <p className="text-muted-foreground mb-6">Get started by creating your first product.</p>
               <Button asChild className="bg-primary hover:bg-primary/80">
                 <Link href="/admin/store/products/create">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

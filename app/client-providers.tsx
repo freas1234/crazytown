@@ -34,8 +34,8 @@ function MaintenanceWrapper({ children }: { children: ReactNode }) {
             console.log('User is admin:', isAdmin);
             console.log('Current pathname:', pathname);
             
-            // If maintenance mode is on and user is not admin and not already on maintenance page or login page
-            if (data.maintenanceMode && !isAdmin && pathname !== '/maintenance' && pathname !== '/login') {
+            // If maintenance mode is on and user is not admin and not already on maintenance page or login page or admin pages
+            if (data.maintenanceMode && !isAdmin && pathname !== '/maintenance' && pathname !== '/login' && !pathname.startsWith('/admin')) {
               console.log('Redirecting non-admin user to maintenance page');
               router.push('/maintenance');
             }
@@ -59,8 +59,8 @@ function MaintenanceWrapper({ children }: { children: ReactNode }) {
     );
   }
 
-  // Show maintenance page only if maintenance mode is on AND user is not admin AND not on login page
-  if (isMaintenanceMode && !isAdmin && pathname !== '/login') {
+  // Show maintenance page only if maintenance mode is on AND user is not admin AND not on login page AND not on admin pages
+  if (isMaintenanceMode && !isAdmin && pathname !== '/login' && !pathname.startsWith('/admin')) {
     console.log('Showing maintenance mode page for non-admin user');
     return <MaintenanceMode customTitle={maintenanceContent?.title} customMessage={maintenanceContent?.message} />;
   }

@@ -33,31 +33,31 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 p-4 md:p-6 lg:p-8">
+      <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
         <div className="space-y-6">
           {/* Header Skeleton */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="space-y-2">
-              <div className="h-8 w-64 bg-gray-800 rounded animate-pulse"></div>
-              <div className="h-4 w-32 bg-gray-800 rounded animate-pulse"></div>
+              <div className="h-8 w-64 bg-card rounded animate-pulse"></div>
+              <div className="h-4 w-32 bg-card rounded animate-pulse"></div>
             </div>
-            <div className="h-10 w-24 bg-gray-800 rounded animate-pulse"></div>
+            <div className="h-10 w-24 bg-card rounded animate-pulse"></div>
           </div>
 
           {/* System Status Skeleton */}
-          <div className="bg-gray-800/50 rounded-lg p-4 md:p-6">
+          <div className="bg-card/50 rounded-lg p-4 md:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="h-3 w-3 bg-gray-700 rounded-full animate-pulse"></div>
+                <div className="h-3 w-3 bg-muted rounded-full animate-pulse"></div>
                 <div className="space-y-1">
-                  <div className="h-4 w-24 bg-gray-700 rounded animate-pulse"></div>
-                  <div className="h-3 w-32 bg-gray-700 rounded animate-pulse"></div>
+                  <div className="h-4 w-24 bg-muted rounded animate-pulse"></div>
+                  <div className="h-3 w-32 bg-muted rounded animate-pulse"></div>
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div>
-                <div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div>
-                <div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-4 w-16 bg-muted rounded animate-pulse"></div>
+                <div className="h-4 w-16 bg-muted rounded animate-pulse"></div>
+                <div className="h-4 w-16 bg-muted rounded animate-pulse"></div>
               </div>
             </div>
           </div>
@@ -65,13 +65,13 @@ export default function AdminDashboard() {
           {/* Stats Cards Skeleton */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-gray-800/50 rounded-lg p-4">
+              <div key={i} className="bg-card/50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
-                    <div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div>
-                    <div className="h-6 w-12 bg-gray-700 rounded animate-pulse"></div>
+                    <div className="h-4 w-16 bg-muted rounded animate-pulse"></div>
+                    <div className="h-6 w-12 bg-muted rounded animate-pulse"></div>
                   </div>
-                  <div className="h-8 w-8 bg-gray-700 rounded animate-pulse"></div>
+                  <div className="h-8 w-8 bg-muted rounded animate-pulse"></div>
                 </div>
               </div>
             ))}
@@ -79,22 +79,22 @@ export default function AdminDashboard() {
 
           {/* Main Content Skeleton */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 bg-gray-800/50 rounded-lg p-4">
+            <div className="lg:col-span-1 bg-card/50 rounded-lg p-4">
               <div className="space-y-3">
-                <div className="h-6 w-24 bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-6 w-24 bg-muted rounded animate-pulse"></div>
                 <div className="space-y-2">
                   {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-10 w-full bg-gray-700 rounded animate-pulse"></div>
+                    <div key={i} className="h-10 w-full bg-muted rounded animate-pulse"></div>
                   ))}
                 </div>
               </div>
             </div>
-            <div className="lg:col-span-2 bg-gray-800/50 rounded-lg p-4">
+            <div className="lg:col-span-2 bg-card/50 rounded-lg p-4">
               <div className="space-y-4">
-                <div className="h-6 w-32 bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-6 w-32 bg-muted rounded animate-pulse"></div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className="h-20 bg-gray-700 rounded animate-pulse"></div>
+                    <div key={i} className="h-20 bg-muted rounded animate-pulse"></div>
                   ))}
                 </div>
               </div>
@@ -102,13 +102,13 @@ export default function AdminDashboard() {
           </div>
 
           {/* Maintenance Mode Skeleton */}
-          <div className="bg-gray-800/50 rounded-lg p-4">
+          <div className="bg-card/50 rounded-lg p-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="space-y-1">
-                <div className="h-4 w-32 bg-gray-700 rounded animate-pulse"></div>
-                <div className="h-3 w-48 bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-4 w-32 bg-muted rounded animate-pulse"></div>
+                <div className="h-3 w-48 bg-muted rounded animate-pulse"></div>
               </div>
-              <div className="h-8 w-24 bg-gray-700 rounded animate-pulse"></div>
+              <div className="h-8 w-24 bg-muted rounded animate-pulse"></div>
             </div>
           </div>
         </div>
@@ -118,16 +118,16 @@ export default function AdminDashboard() {
 
   return (
     <RoleGuard allowedRoles={['admin', 'owner']} redirectTo="/login">
-      <div className="min-h-screen bg-gray-900 p-4 md:p-6 lg:p-8">
+      <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
                 <LayoutDashboard className="h-6 w-6 md:h-8 md:w-8 text-primary" />
               <span className="cyberpunk-border inline-block">Admin Dashboard</span>
             </h1>
-              <p className="text-gray-400 mt-2">Welcome back, {user?.name || 'Administrator'}</p>
+              <p className="text-muted-foreground mt-2">Welcome back, {user?.name || 'Administrator'}</p>
           </div>
             <Button 
               variant="outline" 
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
         
         {/* System Status */}
         <div className="mb-8">
-          <Card className="bg-secondary/50 border-gray-800 backdrop-blur-sm">
+          <Card className="bg-card/50 border-border backdrop-blur-sm">
             <CardContent className="p-4 md:p-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-4">

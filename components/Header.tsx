@@ -172,12 +172,12 @@ export default function Header() {
                 </button>
                 
                 <div 
-                  className={`absolute ${isRTL ? 'left-0' : 'right-0'} mt-2 w-64 game-card overflow-hidden origin-top-right transition-all duration-300 transform ${
+                  className={`absolute ${isRTL ? 'left-0' : 'right-0'} mt-2 w-64 bg-card/95 backdrop-blur-lg border border-border rounded-lg shadow-neon overflow-hidden origin-top-right transition-all duration-300 transform ${
                     userMenuOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                   }`} 
                   id="user-menu"
                 >
-                  <div className="px-4 py-3 border-b border-gray-800 bg-primary/5">
+                  <div className="px-4 py-3 border-b border-border bg-primary/5">
                     <div className="flex items-center space-x-3 rtl:space-x-reverse">
                       {currentUser?.avatar ? (
                         <img 
@@ -191,7 +191,7 @@ export default function Header() {
                         </div>
                       )}
                       <div className="flex flex-col">
-                        <span className="text-white font-medium">
+                        <span className="text-foreground font-medium">
                           {currentUser?.username || currentUser?.email?.split('@')[0]}
                         </span>
                     <UserRoleIndicator />
@@ -201,18 +201,18 @@ export default function Header() {
                   
                   <div className="py-1">
                   {currentUser?.role === 'admin' || currentUser?.role === 'owner' ? (
-                      <Link href="/admin" className={`flex items-center px-4 py-2 text-white hover:text-primary hover:bg-primary/10 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <Link href="/admin" className={`flex items-center px-4 py-2 text-foreground hover:text-primary hover:bg-primary/10 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}>
                         <Settings className={`h-4 w-4 ${isRTL ? 'ml-3' : 'mr-3'}`} />
                       {t('dashboard', 'Dashboard')}
                     </Link>
                   ) : null}
                     
-                    <Link href="/profile" className={`flex items-center px-4 py-2 text-white hover:text-primary hover:bg-primary/10 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <Link href="/profile" className={`flex items-center px-4 py-2 text-foreground hover:text-primary hover:bg-primary/10 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <User className={`h-4 w-4 ${isRTL ? 'ml-3' : 'mr-3'}`} />
                     {t('profile', 'Profile')}
                   </Link>
                     
-                    <Link href="/inbox" className={`flex items-center px-4 py-2 text-white hover:text-primary hover:bg-primary/10 transition-colors sm:hidden ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <Link href="/inbox" className={`flex items-center px-4 py-2 text-foreground hover:text-primary hover:bg-primary/10 transition-colors sm:hidden ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <Mail className={`h-4 w-4 ${isRTL ? 'ml-3' : 'mr-3'}`} />
                     {t('inbox', 'Inbox')}
                     {unreadCount > 0 && (
@@ -220,25 +220,25 @@ export default function Header() {
                     )}
                   </Link>
                     
-                    <Link href="/profile/orders" className={`flex items-center px-4 py-2 text-white hover:text-primary hover:bg-primary/10 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <Link href="/profile/orders" className={`flex items-center px-4 py-2 text-foreground hover:text-primary hover:bg-primary/10 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <ShoppingBag className={`h-4 w-4 ${isRTL ? 'ml-3' : 'mr-3'}`} />
                       {t('orders', 'My Orders')}
                     </Link>
                   </div>
                   
-                  <div className="px-4 py-2 border-t border-gray-800 bg-gray-800/30">
+                  <div className="px-4 py-2 border-t border-border bg-accent/10">
                     <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-gray-400">{t('language', 'Language')}</span>
+                    <span className="text-muted-foreground">{t('language', 'Language')}</span>
                     <div className="flex space-x-4 rtl:space-x-reverse">
                       <LanguageSwitcher variant="minimal" />
                       </div>
                     </div>
                   </div>
                   
-                  <div className="py-1 border-t border-gray-800">
+                  <div className="py-1 border-t border-border">
                   <button 
                     onClick={handleLogout}
-                      className={`w-full flex items-center px-4 py-2 text-white hover:text-primary hover:bg-primary/10 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+                      className={`w-full flex items-center px-4 py-2 text-foreground hover:text-primary hover:bg-primary/10 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
                   >
                       <LogOut className={`h-4 w-4 ${isRTL ? 'ml-3' : 'mr-3'}`} />
                     {t('logout', 'Logout')}
@@ -261,7 +261,7 @@ export default function Header() {
         </div>
       </div>
       
-      <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'} absolute top-full left-4 right-4 mt-2 py-4 bg-secondary/95 backdrop-blur-sm rounded-lg border border-gray-800 shadow-xl`}>
+      <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'} absolute top-full left-4 right-4 mt-2 py-4 bg-card/95 backdrop-blur-sm rounded-lg border border-border shadow-neon`}>
         <nav className="flex flex-col space-y-2">
           {navItems.map((item, index) => {
             const isActive = currentPath === item.href;
@@ -270,7 +270,7 @@ export default function Header() {
                 key={`mobile-nav-${index}`}
                 href={item.href} 
                 className={`flex items-center px-4 py-2 ${isRTL ? 'flex-row-reverse' : ''} ${
-                  isActive ? 'text-primary bg-primary/10' : 'text-white hover:bg-primary/10 hover:text-primary'
+                  isActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-primary/10 hover:text-primary'
                 } transition-colors`}
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -283,7 +283,7 @@ export default function Header() {
           {!currentUser && (
             <Link 
               href="/login" 
-              className={`flex items-center px-4 py-2 text-white hover:bg-primary/10 hover:text-primary transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+              className={`flex items-center px-4 py-2 text-foreground hover:bg-primary/10 hover:text-primary transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               <User className={`h-4 w-4 ${isRTL ? 'ml-3' : 'mr-3'}`} />

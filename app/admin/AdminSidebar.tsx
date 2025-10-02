@@ -118,14 +118,14 @@ export default function AdminSidebar() {
       fallback={<div>Loading...</div>}
     >
       <aside className={cn(
-        "bg-gray-900/95 backdrop-blur-lg border-r border-gray-800 h-screen flex-shrink-0 flex flex-col relative z-10 transition-all duration-300",
+        "bg-card/95 backdrop-blur-lg border-r border-border h-screen flex-shrink-0 flex flex-col relative z-10 transition-all duration-300",
         collapsed ? "w-16" : "w-64",
         isRTL ? "border-l border-r-0" : "border-r border-l-0"
       )}>
         
         <div className="relative z-10 flex flex-col h-full" dir={isRTL ? "rtl" : "ltr"}>
           {/* Header */}
-          <div className="p-4 border-b border-gray-800 flex items-center justify-between">
+          <div className="p-4 border-b border-border flex items-center justify-between">
               {!collapsed && (
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 <Wrench className="h-6 w-6 text-primary" />
@@ -139,14 +139,14 @@ export default function AdminSidebar() {
               variant="ghost" 
               size="icon" 
               onClick={() => setCollapsed(!collapsed)}
-              className="text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-md h-8 w-8"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent/10 rounded-md h-8 w-8"
             >
               {collapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
             </Button>
           </div>
           
           {/* Maintenance mode indicator */}
-          <div className="p-4 border-b border-gray-800">
+          <div className="p-4 border-b border-border">
             <div className={cn(
               "flex items-center",
               collapsed ? "justify-center" : "justify-start"
@@ -167,8 +167,8 @@ export default function AdminSidebar() {
                         className={cn(
                           "w-full justify-start transition-all duration-200 mb-1 h-10",
                           isActive(item.href) 
-                            ? "bg-primary/20 text-primary border border-primary/30" 
-                            : "text-gray-300 hover:text-white hover:bg-gray-800/50",
+                            ? "bg-primary/20 text-primary border border-primary/30 shadow-neon" 
+                            : "text-muted-foreground hover:text-foreground hover:bg-accent/10",
                           collapsed && "px-0 justify-center"
                         )}
                         asChild
@@ -197,22 +197,22 @@ export default function AdminSidebar() {
             </div>
           </nav>
           
-          <Separator className="my-2 bg-gray-800" />
+          <Separator className="my-2 bg-border" />
           
           {/* User info and back to site */}
           <div className="p-4 space-y-3">
             {!collapsed && (
-              <div className="flex items-center gap-3 p-2 bg-gray-800/50 rounded-lg">
+              <div className="flex items-center gap-3 p-2 bg-accent/10 rounded-lg border border-accent/20">
                 <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                   <span className="text-primary text-sm font-medium">
                     {user?.name?.charAt(0) || 'A'}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">
+                  <p className="text-sm font-medium text-foreground truncate">
                     {user?.name || 'Admin'}
                   </p>
-                  <p className="text-xs text-gray-400 truncate">
+                  <p className="text-xs text-muted-foreground truncate">
                     {user?.role || 'Administrator'}
                   </p>
                 </div>
@@ -225,12 +225,12 @@ export default function AdminSidebar() {
                   <Button 
                     variant="outline" 
                     className={cn(
-                      "w-full border-gray-700 hover:bg-gray-800/50 hover:text-white transition-all duration-200",
+                      "w-full border-border hover:bg-accent/10 hover:text-foreground transition-all duration-200",
                       collapsed ? "justify-center" : "justify-start"
                     )} 
                     asChild
                   >
-                    <Link href="/" className="flex items-center text-gray-300 hover:text-white">
+                    <Link href="/" className="flex items-center text-muted-foreground hover:text-foreground">
                       <LogOut className={cn("h-4 w-4", !collapsed && (isRTL ? 'ml-2' : 'mr-2'))} />
                       {!collapsed && 'Back to Site'}
                     </Link>

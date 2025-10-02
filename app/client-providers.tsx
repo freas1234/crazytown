@@ -54,18 +54,19 @@ function MaintenanceWrapper({ children }: { children: ReactNode }) {
     checkMaintenanceMode();
   }, [authLoading, isAdmin, pathname, router, user]);
 
+  // Additional effect to handle route changes
+  useEffect(() => {
+    if (!authLoading && !isLoading) {
+      console.log('Route change detected - Maintenance mode:', isMaintenanceMode, 'Is admin:', isAdmin, 'User role:', user?.role, 'Pathname:', pathname);
+    }
+  }, [pathname, authLoading, isLoading, isMaintenanceMode, isAdmin, user]);
+
   if (isLoading || authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
-  }
-
-  // Show maintenance page only if maintenance mode is on AND user is not admin AND not on login page AND not on admin pages
-  if (isMaintenanceMode && !isAdmin && pathname !== '/login' && !pathname.startsWith('/admin')) {
-    console.log('Showing maintenance mode page for non-admin user');
-    return <MaintenanceMode customTitle={maintenanceContent?.title} customMessage={maintenanceContent?.message} />;
   }
 
   // If admin is accessing admin panel during maintenance, allow access
@@ -80,7 +81,19 @@ function MaintenanceWrapper({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
-  console.log('Showing normal content - Maintenance mode:', isMaintenanceMode, 'Is admin:', isAdmin, 'Pathname:', pathname);
+  // If user exists but isAdmin is false and trying to access admin panel, show maintenance page
+  if (isMaintenanceMode && user && !isAdmin && pathname.startsWith('/admin')) {
+    console.log('Non-admin user trying to access admin panel during maintenance - showing maintenance page');
+    return <MaintenanceMode customTitle={maintenanceContent?.title} customMessage={maintenanceContent?.message} />;
+  }
+
+  // Show maintenance page only if maintenance mode is on AND user is not admin AND not on login page AND not on admin pages
+  if (isMaintenanceMode && !isAdmin && pathname !== '/login' && !pathname.startsWith('/admin')) {
+    console.log('Showing maintenance mode page for non-admin user');
+    return <MaintenanceMode customTitle={maintenanceContent?.title} customMessage={maintenanceContent?.message} />;
+  }
+
+  console.log('Showing normal content - Maintenance mode:', isMaintenanceMode, 'Is admin:', isAdmin, 'User role:', user?.role, 'Pathname:', pathname);
   return <>{children}</>;
 }
 

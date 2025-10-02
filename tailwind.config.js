@@ -98,12 +98,14 @@ module.exports = {
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'cyber-grid': 'url("/grid-pattern.svg")',
-        'glow-primary': 'radial-gradient(circle, rgba(255,107,0,0.2) 0%, rgba(255,107,0,0) 70%)',
+        'glow-primary': 'radial-gradient(circle, rgba(230,116,2,0.2) 0%, rgba(230,116,2,0) 70%)',
+        'glow-gold': 'radial-gradient(circle, rgba(255,215,0,0.2) 0%, rgba(255,215,0,0) 70%)',
       },
       boxShadow: {
-        'neon': '0 0 5px rgba(255, 107, 0, 0.5), 0 0 10px rgba(255, 107, 0, 0.3)',
-        'neon-strong': '0 0 5px rgba(255, 107, 0, 0.7), 0 0 15px rgba(255, 107, 0, 0.5), 0 0 25px rgba(255, 107, 0, 0.3)',
-        'cyber': '0 8px 20px -6px rgba(255, 107, 0, 0.2)',
+        'neon': '0 0 5px rgba(230, 116, 2, 0.5), 0 0 10px rgba(255, 215, 0, 0.3)',
+        'neon-strong': '0 0 5px rgba(230, 116, 2, 0.7), 0 0 15px rgba(255, 215, 0, 0.5), 0 0 25px rgba(230, 116, 2, 0.3)',
+        'cyber': '0 8px 20px -6px rgba(230, 116, 2, 0.2)',
+        'gold': '0 0 10px rgba(255, 215, 0, 0.4)',
       },
     },
   },

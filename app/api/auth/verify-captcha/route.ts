@@ -1,35 +1,44 @@
-import { NextResponse } from 'next/server';
-import { verifyRecaptchaToken } from '../../../../lib/google-recaptcha';
+import { NextResponse } from "next/server";
+import { verifyRecaptchaToken } from "../../../../lib/google-recaptcha";
 
 export async function POST(request: Request) {
   try {
+    // Bypass reCAPTCHA verification in development mode
+    if (process.env.NODE_ENV === "development") {
+      console.log("[DEV] reCAPTCHA verification bypassed");
+      return NextResponse.json(
+        { success: true, message: "reCAPTCHA verified (dev mode)" },
+        { status: 200 }
+      );
+    }
+
     const body = await request.json();
     const { recaptchaToken } = body;
 
     if (!recaptchaToken) {
       return NextResponse.json(
-        { success: false, message: 'reCAPTCHA token required' },
+        { success: false, message: "reCAPTCHA token required" },
         { status: 400 }
       );
     }
 
     const recaptchaResult = await verifyRecaptchaToken(recaptchaToken);
-    
+
     if (!recaptchaResult.success) {
       return NextResponse.json(
-        { success: false, message: 'reCAPTCHA verification failed' },
+        { success: false, message: "reCAPTCHA verification failed" },
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { success: true, message: 'reCAPTCHA verified' },
+      { success: true, message: "reCAPTCHA verified" },
       { status: 200 }
     );
   } catch (error) {
-    console.error('reCAPTCHA verification error:', error);
+    console.error("reCAPTCHA verification error:", error);
     return NextResponse.json(
-      { success: false, message: 'Verification error' },
+      { success: false, message: "Verification error" },
       { status: 500 }
     );
   }

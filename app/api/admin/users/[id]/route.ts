@@ -3,41 +3,44 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../../../../lib/auth-config";
 import { db } from "../../../../../lib/db";
 import { cookies } from "next/headers";
-import { getUserFromToken, UserJwtPayload } from "../../../../../lib/auth-utils";
+import {
+  getUserFromToken,
+  UserJwtPayload,
+} from "../../../../../lib/auth-utils";
 import { User } from "../../../../../lib/db";
 
-async function checkAdminAuth(): Promise<{ 
-  isAdmin: boolean; 
-  user: (UserJwtPayload | User | null);
+async function checkAdminAuth(): Promise<{
+  isAdmin: boolean;
+  user: UserJwtPayload | User | null;
 }> {
   const session = await getServerSession(authOptions);
-  
+
   if (session?.user) {
-    if (session.user.role === 'admin' || session.user.role === 'owner') {
+    if (session.user.role === "admin" || session.user.role === "owner") {
       return { isAdmin: true, user: session.user as UserJwtPayload };
     }
   }
-  
+
   const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
-  
+  const token = cookieStore.get("token")?.value;
+
   if (token) {
     const user = await getUserFromToken(token);
-    
-    if (user && user.id && (user.role === 'admin' || user.role === 'owner')) {
+
+    if (user && user.id && (user.role === "admin" || user.role === "owner")) {
       // Convert IUser to UserJwtPayload format to ensure type compatibility
       const userPayload: UserJwtPayload = {
         id: user.id,
         email: user.email,
-        username: user.username || user.email.split('@')[0],
+        username: user.username || user.email.split("@")[0],
         role: user.role,
         avatar: user.avatar,
-        discordId: user.discordId
+        discordId: user.discordId,
       };
       return { isAdmin: true, user: userPayload };
     }
   }
-  
+
   return { isAdmin: false, user: null };
 }
 
@@ -47,7 +50,7 @@ export async function GET(
 ) {
   try {
     const { isAdmin } = await checkAdminAuth();
-    
+
     if (!isAdmin) {
       return NextResponse.json(
         { error: "Unauthorized", success: false },
@@ -57,17 +60,17 @@ export async function GET(
 
     const { id } = await params;
     const user = await db.user.findUnique({
-      where: { id }
+      where: { id },
     });
-    
+
     if (!user) {
       return NextResponse.json(
         { error: "User not found", success: false },
         { status: 404 }
       );
     }
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       user: {
         id: user.id,
         email: user.email,
@@ -75,13 +78,14 @@ export async function GET(
         role: user.role,
         avatar: user.avatar,
         bio: user.bio,
+        discordId: user.discordId,
         createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        updatedAt: user.updatedAt,
       },
-      success: true 
+      success: true,
     });
   } catch (error) {
-    console.error('Error fetching user:', error);
+    console.error("Error fetching user:", error);
     return NextResponse.json(
       { error: "Internal server error", success: false },
       { status: 500 }
@@ -95,7 +99,7 @@ export async function PATCH(
 ) {
   try {
     const { isAdmin, user: currentUser } = await checkAdminAuth();
-    
+
     if (!isAdmin) {
       return NextResponse.json(
         { error: "Unauthorized", success: false },
@@ -105,22 +109,22 @@ export async function PATCH(
 
     const { id } = await params;
     const userToUpdate = await db.user.findUnique({
-      where: { id }
+      where: { id },
     });
-    
+
     if (!userToUpdate) {
       return NextResponse.json(
         { error: "User not found", success: false },
         { status: 404 }
       );
     }
-    
-    const currentUserId = 'id' in currentUser! ? currentUser.id : '';
-    const currentUserRole = currentUser?.role || 'user';
-    
+
+    const currentUserId = "id" in currentUser! ? currentUser.id : "";
+    const currentUserRole = currentUser?.role || "user";
+
     if (
-      (currentUserRole === 'admin' && userToUpdate.role === 'owner') ||
-      (currentUserRole !== 'owner' && currentUserId !== id)
+      (currentUserRole === "admin" && userToUpdate.role === "owner") ||
+      (currentUserRole !== "owner" && currentUserId !== id)
     ) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions", success: false },
@@ -129,49 +133,73 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    
-    if (body.role && currentUserRole !== 'admin' && currentUserRole !== 'owner') {
+
+    // Handle roles (support both single role and multiple roles)
+    const rolesToAssign = body.roles || (body.role ? [body.role] : undefined);
+
+    if (
+      rolesToAssign &&
+      currentUserRole !== "admin" &&
+      currentUserRole !== "owner"
+    ) {
       return NextResponse.json(
-        { error: "Forbidden - Cannot change role", success: false },
+        { error: "Forbidden - Cannot change roles", success: false },
         { status: 403 }
       );
     }
-    
-    if (body.role === 'owner' && currentUserRole !== 'owner') {
+
+    if (
+      rolesToAssign &&
+      rolesToAssign.includes("owner") &&
+      currentUserRole !== "owner"
+    ) {
       return NextResponse.json(
-        { error: "Forbidden - Only owners can promote to owner", success: false },
+        {
+          error: "Forbidden - Only owners can assign owner role",
+          success: false,
+        },
         { status: 403 }
       );
     }
-     
+
+    const updateData: any = {
+      username: body.username,
+      email: body.email,
+      bio: body.bio,
+      avatar: body.avatar,
+      discordId: body.discordId,
+      ...(body.password ? { password: body.password } : {}),
+    };
+
+    // Update roles if provided
+    if (rolesToAssign) {
+      updateData.roles = rolesToAssign;
+      updateData.role = rolesToAssign[0] || "user"; // Keep for backward compatibility
+    }
+
     const updatedUser = await db.user.update({
       where: { id },
-      data: {
-        username: body.username,
-        email: body.email,
-        role: body.role,
-        bio: body.bio,
-        avatar: body.avatar,
-        
-        ...(body.password ? { password: body.password } : {})
-      }
+      data: updateData,
     });
-     
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       user: {
         id: updatedUser.id,
         email: updatedUser.email,
         username: updatedUser.username,
         role: updatedUser.role,
+        roles:
+          updatedUser.roles || (updatedUser.role ? [updatedUser.role] : []),
         avatar: updatedUser.avatar,
         bio: updatedUser.bio,
+        discordId: updatedUser.discordId,
         createdAt: updatedUser.createdAt,
-        updatedAt: updatedUser.updatedAt
+        updatedAt: updatedUser.updatedAt,
       },
-      success: true 
+      success: true,
     });
   } catch (error) {
-    console.error('Error updating user:', error);
+    console.error("Error updating user:", error);
     return NextResponse.json(
       { error: "Internal server error", success: false },
       { status: 500 }
@@ -185,7 +213,7 @@ export async function DELETE(
 ) {
   try {
     const { isAdmin, user: currentUser } = await checkAdminAuth();
-    
+
     if (!isAdmin) {
       return NextResponse.json(
         { error: "Unauthorized", success: false },
@@ -195,43 +223,43 @@ export async function DELETE(
 
     const { id } = await params;
     const userToDelete = await db.user.findUnique({
-      where: { id }
+      where: { id },
     });
-    
+
     if (!userToDelete) {
       return NextResponse.json(
         { error: "User not found", success: false },
         { status: 404 }
       );
     }
-      
-    const currentUserId = 'id' in currentUser! ? currentUser.id : '';
-    const currentUserRole = currentUser?.role || 'user';
-    
+
+    const currentUserId = "id" in currentUser! ? currentUser.id : "";
+    const currentUserRole = currentUser?.role || "user";
+
     if (
-      (currentUserRole === 'admin' && userToDelete.role === 'owner') ||
-      (currentUserRole !== 'admin' && currentUserRole !== 'owner') ||
-      (currentUserId === id)
+      (currentUserRole === "admin" && userToDelete.role === "owner") ||
+      (currentUserRole !== "admin" && currentUserRole !== "owner") ||
+      currentUserId === id
     ) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions", success: false },
         { status: 403 }
       );
     }
-     
+
     await db.user.delete({
-      where: { id }
+      where: { id },
     });
-       
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       message: "User deleted successfully",
-      success: true 
+      success: true,
     });
   } catch (error) {
-    console.error('Error deleting user:', error);
+    console.error("Error deleting user:", error);
     return NextResponse.json(
       { error: "Internal server error", success: false },
       { status: 500 }
     );
   }
-} 
+}

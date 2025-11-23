@@ -1,19 +1,28 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { isRecaptchaConfigured, getRecaptchaSiteKey } from '../lib/google-recaptcha';
+import { useEffect, useRef, useState } from "react";
+import {
+  isRecaptchaConfigured,
+  getRecaptchaSiteKey,
+} from "../lib/google-recaptcha";
 
 declare global {
   interface Window {
     grecaptcha: {
       ready: (callback: () => void) => void;
-      execute: (siteKey: string, options: { action: string }) => Promise<string>;
-      render: (container: HTMLElement, options: {
-        sitekey: string;
-        callback: (token: string) => void;
-        'expired-callback': () => void;
-        'error-callback': () => void;
-      }) => number;
+      execute: (
+        siteKey: string,
+        options: { action: string }
+      ) => Promise<string>;
+      render: (
+        container: HTMLElement,
+        options: {
+          sitekey: string;
+          callback: (token: string) => void;
+          "expired-callback": () => void;
+          "error-callback": () => void;
+        }
+      ) => number;
       reset: (widgetId: number) => void;
     };
   }
@@ -28,14 +37,13 @@ interface GoogleRecaptchaProps {
   className?: string;
 }
 
-
 export default function GoogleRecaptcha({
   onVerify,
   onExpire,
   onError,
-  action = 'submit',
+  action = "submit",
   threshold = 0.5,
-  className = ''
+  className = "",
 }: GoogleRecaptchaProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -43,8 +51,16 @@ export default function GoogleRecaptcha({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Auto-verify in development mode
+    if (process.env.NODE_ENV === "development") {
+      console.log("[DEV] reCAPTCHA auto-verified");
+      onVerify("dev-bypass-token");
+      setIsReady(true);
+      return;
+    }
+
     if (!isRecaptchaConfigured()) {
-      console.warn('Google reCAPTCHA not configured');
+      console.warn("Google reCAPTCHA not configured");
       return;
     }
 
@@ -54,7 +70,7 @@ export default function GoogleRecaptcha({
         return;
       }
 
-      const script = document.createElement('script');
+      const script = document.createElement("script");
       script.src = `https://www.google.com/recaptcha/api.js?render=${getRecaptchaSiteKey()}`;
       script.async = true;
       script.defer = true;
@@ -62,7 +78,7 @@ export default function GoogleRecaptcha({
         setIsLoaded(true);
       };
       script.onerror = () => {
-        console.error('Failed to load Google reCAPTCHA');
+        console.error("Failed to load Google reCAPTCHA");
         onError?.();
       };
       document.head.appendChild(script);
@@ -80,14 +96,23 @@ export default function GoogleRecaptcha({
   }, [isLoaded]);
 
   const executeRecaptcha = async () => {
+    // Auto-verify in development mode
+    if (process.env.NODE_ENV === "development") {
+      console.log("[DEV] reCAPTCHA execution bypassed");
+      onVerify("dev-bypass-token");
+      return;
+    }
+
     if (!isReady || isExecuting) return;
 
     try {
       setIsExecuting(true);
-      const token = await window.grecaptcha.execute(getRecaptchaSiteKey(), { action });
+      const token = await window.grecaptcha.execute(getRecaptchaSiteKey(), {
+        action,
+      });
       onVerify(token);
     } catch (error) {
-      console.error('reCAPTCHA execution error:', error);
+      console.error("reCAPTCHA execution error:", error);
       onError?.();
     } finally {
       setIsExecuting(false);
@@ -100,6 +125,15 @@ export default function GoogleRecaptcha({
       (containerRef.current as any).execute = executeRecaptcha;
     }
   }, [isReady, isExecuting]);
+
+  // In development mode, don't render the reCAPTCHA widget
+  if (process.env.NODE_ENV === "development") {
+    return (
+      <div className={`text-center text-gray-400 text-sm ${className}`}>
+        [DEV] reCAPTCHA bypassed
+      </div>
+    );
+  }
 
   if (!isRecaptchaConfigured()) {
     return (
@@ -119,7 +153,7 @@ export default function GoogleRecaptcha({
             disabled={isExecuting}
             className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded-md transition-colors"
           >
-            {isExecuting ? 'Verifying...' : 'Verify Security'}
+            {isExecuting ? "Verifying..." : "Verify Security"}
           </button>
         )}
       </div>

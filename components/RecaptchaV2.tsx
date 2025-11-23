@@ -1,19 +1,28 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { isRecaptchaConfigured, getRecaptchaSiteKey } from '../lib/google-recaptcha';
+import { useEffect, useRef, useState } from "react";
+import {
+  isRecaptchaConfigured,
+  getRecaptchaSiteKey,
+} from "../lib/google-recaptcha";
 
 declare global {
   interface Window {
     grecaptcha: {
       ready: (callback: () => void) => void;
-      execute: (siteKey: string, options: { action: string }) => Promise<string>;
-      render: (container: HTMLElement, options: {
-        sitekey: string;
-        callback: (token: string) => void;
-        'expired-callback': () => void;
-        'error-callback': () => void;
-      }) => number;
+      execute: (
+        siteKey: string,
+        options: { action: string }
+      ) => Promise<string>;
+      render: (
+        container: HTMLElement,
+        options: {
+          sitekey: string;
+          callback: (token: string) => void;
+          "expired-callback": () => void;
+          "error-callback": () => void;
+        }
+      ) => number;
       reset: (widgetId: number) => void;
     };
   }
@@ -26,12 +35,11 @@ interface RecaptchaV2Props {
   className?: string;
 }
 
-
 export default function RecaptchaV2({
   onVerify,
   onExpire,
   onError,
-  className = ''
+  className = "",
 }: RecaptchaV2Props) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -40,8 +48,15 @@ export default function RecaptchaV2({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Auto-verify in development mode
+    if (process.env.NODE_ENV === "development") {
+      console.log("[DEV] reCAPTCHA auto-verified");
+      onVerify("dev-bypass-token");
+      return;
+    }
+
     if (!isRecaptchaConfigured()) {
-      console.warn('Google reCAPTCHA not configured');
+      console.warn("Google reCAPTCHA not configured");
       return;
     }
 
@@ -52,21 +67,23 @@ export default function RecaptchaV2({
       }
 
       // Check if script already exists
-      const existingScript = document.querySelector('script[src*="recaptcha/api.js"]');
+      const existingScript = document.querySelector(
+        'script[src*="recaptcha/api.js"]'
+      );
       if (existingScript) {
         setIsLoaded(true);
         return;
       }
 
-      const script = document.createElement('script');
-      script.src = 'https://www.google.com/recaptcha/api.js';
+      const script = document.createElement("script");
+      script.src = "https://www.google.com/recaptcha/api.js";
       script.async = true;
       script.defer = true;
       script.onload = () => {
         setIsLoaded(true);
       };
       script.onerror = () => {
-        console.error('Failed to load Google reCAPTCHA');
+        console.error("Failed to load Google reCAPTCHA");
         onError?.();
       };
       document.head.appendChild(script);
@@ -90,7 +107,7 @@ export default function RecaptchaV2({
           setLoadingTimeout(false);
         });
       } else {
-        console.error('reCAPTCHA not available after loading');
+        console.error("reCAPTCHA not available after loading");
         onError?.();
       }
     }, 1000);
@@ -110,16 +127,16 @@ export default function RecaptchaV2({
         callback: (token: string) => {
           onVerify(token);
         },
-        'expired-callback': () => {
+        "expired-callback": () => {
           onExpire?.();
         },
-        'error-callback': () => {
+        "error-callback": () => {
           onError?.();
-        }
+        },
       });
       setWidgetId(id);
     } catch (error) {
-      console.error('reCAPTCHA render error:', error);
+      console.error("reCAPTCHA render error:", error);
       onError?.();
     }
   }, [isReady, onVerify, onExpire, onError]);
@@ -137,6 +154,15 @@ export default function RecaptchaV2({
     }
   }, [widgetId]);
 
+  // In development mode, don't render the reCAPTCHA widget
+  if (process.env.NODE_ENV === "development") {
+    return (
+      <div className={`text-center text-gray-400 text-sm ${className}`}>
+        [DEV] reCAPTCHA bypassed
+      </div>
+    );
+  }
+
   if (!isRecaptchaConfigured()) {
     return (
       <div className={`text-center text-gray-500 ${className}`}>
@@ -147,15 +173,17 @@ export default function RecaptchaV2({
 
   return (
     <div className={className}>
-      <div ref={containerRef} className="recaptcha-container flex justify-center">
+      <div
+        ref={containerRef}
+        className="recaptcha-container flex justify-center"
+      >
         {!isReady && (
           <div className="flex items-center justify-center space-x-2 text-gray-400 text-sm py-4">
             <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
             <span>
-              {loadingTimeout 
-                ? "reCAPTCHA is taking longer than expected. Please refresh the page if it doesn't load." 
-                : "Loading security verification..."
-              }
+              {loadingTimeout
+                ? "reCAPTCHA is taking longer than expected. Please refresh the page if it doesn't load."
+                : "Loading security verification..."}
             </span>
           </div>
         )}

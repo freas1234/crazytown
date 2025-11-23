@@ -1,7 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { isRecaptchaConfigured, getRecaptchaSiteKey } from '../lib/google-recaptcha';
+import { useEffect, useRef, useState } from "react";
+import {
+  isRecaptchaConfigured,
+  getRecaptchaSiteKey,
+} from "../lib/google-recaptcha";
 
 interface SimpleRecaptchaProps {
   onVerify: (token: string) => void;
@@ -14,13 +17,19 @@ declare global {
   interface Window {
     grecaptcha: {
       ready: (callback: () => void) => void;
-      execute: (siteKey: string, options: { action: string }) => Promise<string>;
-      render: (container: HTMLElement, options: {
-        sitekey: string;
-        callback: (token: string) => void;
-        'expired-callback': () => void;
-        'error-callback': () => void;
-      }) => number;
+      execute: (
+        siteKey: string,
+        options: { action: string }
+      ) => Promise<string>;
+      render: (
+        container: HTMLElement,
+        options: {
+          sitekey: string;
+          callback: (token: string) => void;
+          "expired-callback": () => void;
+          "error-callback": () => void;
+        }
+      ) => number;
       reset: (widgetId: number) => void;
     };
   }
@@ -29,8 +38,8 @@ declare global {
 export default function SimpleRecaptcha({
   onVerify,
   onError,
-  action = 'submit',
-  className = ''
+  action = "submit",
+  className = "",
 }: SimpleRecaptchaProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -38,8 +47,16 @@ export default function SimpleRecaptcha({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Auto-verify in development mode
+    if (process.env.NODE_ENV === "development") {
+      console.log("[DEV] reCAPTCHA auto-verified in SimpleRecaptcha");
+      onVerify("dev-bypass-token");
+      setIsReady(true);
+      return;
+    }
+
     if (!isRecaptchaConfigured()) {
-      console.warn('Google reCAPTCHA not configured');
+      console.warn("Google reCAPTCHA not configured");
       return;
     }
 
@@ -49,7 +66,7 @@ export default function SimpleRecaptcha({
         return;
       }
 
-      const script = document.createElement('script');
+      const script = document.createElement("script");
       script.src = `https://www.google.com/recaptcha/api.js?render=${getRecaptchaSiteKey()}`;
       script.async = true;
       script.defer = true;
@@ -57,7 +74,7 @@ export default function SimpleRecaptcha({
         setIsLoaded(true);
       };
       script.onerror = () => {
-        console.error('Failed to load Google reCAPTCHA');
+        console.error("Failed to load Google reCAPTCHA");
         onError?.();
       };
       document.head.appendChild(script);
@@ -81,14 +98,23 @@ export default function SimpleRecaptcha({
   }, [isReady]);
 
   const executeRecaptcha = async () => {
+    // Auto-verify in development mode
+    if (process.env.NODE_ENV === "development") {
+      console.log("[DEV] reCAPTCHA execution bypassed");
+      onVerify("dev-bypass-token");
+      return;
+    }
+
     if (!isReady || isExecuting) return;
 
     try {
       setIsExecuting(true);
-      const token = await window.grecaptcha.execute(getRecaptchaSiteKey(), { action });
+      const token = await window.grecaptcha.execute(getRecaptchaSiteKey(), {
+        action,
+      });
       onVerify(token);
     } catch (error) {
-      console.error('reCAPTCHA execution error:', error);
+      console.error("reCAPTCHA execution error:", error);
       onError?.();
     } finally {
       setIsExecuting(false);
@@ -101,6 +127,11 @@ export default function SimpleRecaptcha({
       (containerRef.current as any).execute = executeRecaptcha;
     }
   }, [isReady, isExecuting]);
+
+  // In development mode, don't render the reCAPTCHA widget
+  if (process.env.NODE_ENV === "development") {
+    return null; // Invisible component, already auto-verified
+  }
 
   if (!isRecaptchaConfigured()) {
     return null; // Don't show anything if not configured

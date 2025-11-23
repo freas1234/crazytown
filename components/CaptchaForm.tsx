@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { RefreshCw, Shield, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from './ui/alert';
-import GoogleRecaptcha from './GoogleRecaptcha';
-import { isRecaptchaConfigured } from '../lib/google-recaptcha';
+import { useState, useEffect } from "react";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { RefreshCw, Shield, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "./ui/alert";
+import GoogleRecaptcha from "./GoogleRecaptcha";
+import { isRecaptchaConfigured } from "../lib/google-recaptcha";
 
 interface CaptchaFormProps {
   onSubmit: (data: {
@@ -21,25 +21,33 @@ interface CaptchaFormProps {
   threshold?: number;
 }
 
-export default function CaptchaForm({ 
-  onSubmit, 
-  loading = false, 
-  error, 
-  children, 
-  action = 'form_submit',
-  threshold = 0.5 
+export default function CaptchaForm({
+  onSubmit,
+  loading = false,
+  error,
+  children,
+  action = "form_submit",
+  threshold = 0.5,
 }: CaptchaFormProps) {
-  const [recaptchaToken, setRecaptchaToken] = useState('');
+  const [recaptchaToken, setRecaptchaToken] = useState("");
   const [formStartTime] = useState(Date.now());
-  const [captchaError, setCaptchaError] = useState('');
+  const [captchaError, setCaptchaError] = useState("");
   const [isRecaptchaReady, setIsRecaptchaReady] = useState(false);
 
   useEffect(() => {
-    if (!isRecaptchaConfigured()) {
-      setCaptchaError('reCAPTCHA is not configured. Please contact support.');
+    // Auto-verify in development mode
+    if (process.env.NODE_ENV === "development") {
+      console.log("[DEV] reCAPTCHA auto-verified in CaptchaForm");
+      setRecaptchaToken("dev-bypass-token");
+      setIsRecaptchaReady(true);
       return;
     }
-    
+
+    if (!isRecaptchaConfigured()) {
+      setCaptchaError("reCAPTCHA is not configured. Please contact support.");
+      return;
+    }
+
     // Set a small delay to ensure reCAPTCHA script is loaded
     const timer = setTimeout(() => {
       setIsRecaptchaReady(true);
@@ -50,33 +58,36 @@ export default function CaptchaForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!recaptchaToken) {
-      setCaptchaError('Please complete the reCAPTCHA verification');
+
+    // Skip reCAPTCHA check in development mode
+    const isDevelopment = process.env.NODE_ENV === "development";
+
+    if (!isDevelopment && !recaptchaToken) {
+      setCaptchaError("Please complete the reCAPTCHA verification");
       return;
     }
-    
+
     // Create form data with reCAPTCHA
     const formData = {
-      recaptchaToken,
-      formStartTime
+      recaptchaToken: isDevelopment ? "dev-bypass-token" : recaptchaToken,
+      formStartTime,
     };
-    
+
     onSubmit(formData);
   };
 
   const handleRecaptchaVerify = (token: string) => {
     setRecaptchaToken(token);
-    setCaptchaError('');
+    setCaptchaError("");
   };
 
   const handleRecaptchaExpire = () => {
-    setRecaptchaToken('');
+    setRecaptchaToken("");
   };
 
   const handleRecaptchaError = () => {
-    setCaptchaError('reCAPTCHA verification failed. Please try again.');
-    setRecaptchaToken('');
+    setCaptchaError("reCAPTCHA verification failed. Please try again.");
+    setRecaptchaToken("");
   };
 
   if (!isRecaptchaReady) {
@@ -138,7 +149,9 @@ export default function CaptchaForm({
               className="flex justify-center"
             />
             {captchaError && (
-              <p className="text-sm text-red-500 mt-2 text-center">{captchaError}</p>
+              <p className="text-sm text-red-500 mt-2 text-center">
+                {captchaError}
+              </p>
             )}
           </div>
         </CardContent>
@@ -167,7 +180,7 @@ export default function CaptchaForm({
             Processing...
           </>
         ) : (
-          'Submit'
+          "Submit"
         )}
       </Button>
     </form>

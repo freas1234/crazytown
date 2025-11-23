@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { ReactNode, useEffect } from 'react';
-import { useAuth } from '../lib/AuthContext';
-import { useRouter } from 'next/navigation';
+import { ReactNode, useEffect } from "react";
+import { useAuth } from "../lib/AuthContext";
+import { useRouter } from "next/navigation";
 
 interface RoleGuardProps {
   children: ReactNode;
@@ -13,16 +13,23 @@ interface RoleGuardProps {
 
 export function RoleGuard({
   children,
-  allowedRoles = ['admin', 'owner'],
+  allowedRoles = ["admin", "owner"],
   fallback = null,
-  redirectTo
+  redirectTo,
 }: RoleGuardProps) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
+  // Check if user has any of the allowed roles
+  const hasAllowedRole = () => {
+    if (!user) return false;
+    const userRoles = (user as any).roles || (user.role ? [user.role] : []);
+    return allowedRoles.some((role) => userRoles.includes(role));
+  };
+
   useEffect(() => {
     // Only redirect if we're not loading and user doesn't have access
-    if (!isLoading && (!user || !allowedRoles.includes(user.role))) {
+    if (!isLoading && (!user || !hasAllowedRole())) {
       if (redirectTo) {
         // Add a small delay to prevent immediate redirects during initial load
         const timer = setTimeout(() => {
@@ -43,9 +50,9 @@ export function RoleGuard({
     );
   }
 
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user || !hasAllowedRole()) {
     return <>{fallback}</>;
   }
-  
+
   return <>{children}</>;
-} 
+}

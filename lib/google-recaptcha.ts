@@ -2,7 +2,7 @@ interface RecaptchaResponse {
   success: boolean;
   challenge_ts?: string;
   hostname?: string;
-  'error-codes'?: string[];
+  "error-codes"?: string[];
   score?: number;
   action?: string;
 }
@@ -16,36 +16,53 @@ interface RecaptchaV3Config {
 class GoogleRecaptchaService {
   private siteKey: string;
   private secretKey: string;
-  private verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
+  private verifyUrl = "https://www.google.com/recaptcha/api/siteverify";
 
   constructor() {
-    this.siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY! || '6LfOP9UrAAAAAKHF4NOrQChURSButq801EbaoQOR';
-    this.secretKey = process.env.RECAPTCHA_SECRET_KEY! || '6LfOP9UrAAAAAMTmT-XHh5yTZP13c7xu3p3c4Id2';
-    
+    this.siteKey =
+      process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY! ||
+      "6LfOP9UrAAAAAKHF4NOrQChURSButq801EbaoQOR";
+    this.secretKey =
+      process.env.RECAPTCHA_SECRET_KEY! ||
+      "6LfOP9UrAAAAAMTmT-XHh5yTZP13c7xu3p3c4Id2";
+
     if (!this.siteKey || !this.secretKey) {
-      console.warn('Google reCAPTCHA keys not configured. Using fallback CAPTCHA.');
+      console.warn(
+        "Google reCAPTCHA keys not configured. Using fallback CAPTCHA."
+      );
     }
   }
 
-  async verifyToken(token: string, remoteip?: string, action?: string, threshold: number = 0.5): Promise<{
+  async verifyToken(
+    token: string,
+    remoteip?: string,
+    action?: string,
+    threshold: number = 0.5
+  ): Promise<{
     success: boolean;
     score?: number;
     errors?: string[];
   }> {
+    // Bypass reCAPTCHA verification in development mode
+    if (process.env.NODE_ENV === "development") {
+      console.log("[DEV] reCAPTCHA verification bypassed");
+      return { success: true, score: 1.0 };
+    }
+
     if (!this.secretKey) {
-      return { success: false, errors: ['reCAPTCHA not configured'] };
+      return { success: false, errors: ["reCAPTCHA not configured"] };
     }
 
     try {
       const response = await fetch(this.verifyUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
           secret: this.secretKey,
           response: token,
-          remoteip: remoteip || '',
+          remoteip: remoteip || "",
         }),
       });
 
@@ -79,14 +96,14 @@ class GoogleRecaptchaService {
       } else {
         return {
           success: false,
-          errors: data['error-codes'] || ['Verification failed'],
+          errors: data["error-codes"] || ["Verification failed"],
         };
       }
     } catch (error) {
-      console.error('reCAPTCHA verification error:', error);
+      console.error("reCAPTCHA verification error:", error);
       return {
         success: false,
-        errors: ['Network error during verification'],
+        errors: ["Network error during verification"],
       };
     }
   }
@@ -104,7 +121,12 @@ class GoogleRecaptchaService {
 export const recaptchaService = new GoogleRecaptchaService();
 
 // Helper functions
-export async function verifyRecaptchaToken(token: string, remoteip?: string, action?: string, threshold?: number) {
+export async function verifyRecaptchaToken(
+  token: string,
+  remoteip?: string,
+  action?: string,
+  threshold?: number
+) {
   return recaptchaService.verifyToken(token, remoteip, action, threshold);
 }
 
@@ -118,33 +140,33 @@ export function isRecaptchaConfigured() {
 
 // Generate a simple browser fingerprint for security purposes
 export function generateBrowserFingerprint(): string {
-  if (typeof window === 'undefined') {
-    return 'server-side';
+  if (typeof window === "undefined") {
+    return "server-side";
   }
 
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
   if (ctx) {
-    ctx.textBaseline = 'top';
-    ctx.font = '14px Arial';
-    ctx.fillText('Browser fingerprint', 2, 2);
+    ctx.textBaseline = "top";
+    ctx.font = "14px Arial";
+    ctx.fillText("Browser fingerprint", 2, 2);
   }
 
   const fingerprint = [
     navigator.userAgent,
     navigator.language,
-    screen.width + 'x' + screen.height,
+    screen.width + "x" + screen.height,
     new Date().getTimezoneOffset(),
-    canvas.toDataURL()
-  ].join('|');
+    canvas.toDataURL(),
+  ].join("|");
 
   // Simple hash function
   let hash = 0;
   for (let i = 0; i < fingerprint.length; i++) {
     const char = fingerprint.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
-  
+
   return Math.abs(hash).toString(36);
 }
